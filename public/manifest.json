@@ -1,0 +1,15 @@
+{
+  "name": "UrbanKicks — Premium Replica Sneakers",
+  "short_name": "UrbanKicks",
+  "description": "Shop premium replica sneakers online with COD, free shipping above ₹999, and 7-day returns.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

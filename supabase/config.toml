@@ -1,0 +1,16 @@
+# Minimal Supabase CLI config. Run `supabase init` if you want the full
+# default file (local dev stack, studio port, etc.) — this is enough for
+# `supabase link` + `supabase db push` + `supabase functions deploy`.
+project_id = "urbankicks"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
