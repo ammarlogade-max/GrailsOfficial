@@ -48,16 +48,19 @@ export default function HeroSection({ hero }: HeroSectionProps) {
         )}
       </div>
       <div className="absolute inset-0" style={{ background: `rgba(10,10,10,${hero.overlayOpacity})` }} />
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
-        <div className={`flex flex-col gap-5 max-w-xl ${alignClass}`}>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-28">
+        <div className={`flex flex-col gap-4 sm:gap-5 max-w-xl ${alignClass} rounded-xl bg-black/35 p-5 ring-1 ring-white/10 sm:rounded-none sm:bg-transparent sm:p-0 sm:ring-0`}>
           <span className="hang-tag bg-[var(--color-primary)] text-white w-fit">{hero.offerBadgeText}</span>
-          <h1 className="text-display text-white text-5xl sm:text-6xl lg:text-7xl">{hero.heading}</h1>
-          <p className="text-neutral-300 text-base sm:text-lg max-w-md">{hero.subheading}</p>
-          <div className="flex flex-wrap gap-3 mt-2">
-            <Link to={hero.ctaPrimaryLink} className="btn btn-primary btn-lg">
+          <h1 className="text-display text-white text-4xl sm:text-6xl lg:text-7xl">{hero.heading}</h1>
+          <p className="text-neutral-200 text-base sm:text-lg max-w-md">{hero.subheading}</p>
+          <div className="flex flex-col sm:flex-row gap-3 mt-1 sm:mt-2 w-full sm:w-auto">
+            <Link to={hero.ctaPrimaryLink} className="btn btn-primary btn-lg w-full sm:w-auto">
               {hero.ctaPrimaryText} <ArrowRight size={16} />
             </Link>
-            <Link to={hero.ctaSecondaryLink} className="btn btn-outline btn-lg !text-white !border-white/40 hover:!border-white">
+            <Link
+              to={hero.ctaSecondaryLink}
+              className="btn btn-outline btn-lg w-full sm:w-auto text-white border-white/60 bg-white/10 hover:bg-white/15 hover:border-white"
+            >
               {hero.ctaSecondaryText}
             </Link>
           </div>

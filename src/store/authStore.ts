@@ -86,10 +86,14 @@ export const useAuthStore = create<AuthState>()(
           set({ loading: false, error: err instanceof Error ? err.message : "Too many attempts" });
           throw err;
         }
+        const redirectTo = import.meta.env.VITE_SITE_URL || window.location.origin;
         const { data, error } = await supabase.auth.signUp({
           email,
           password: password || "",
-          options: { data: { full_name: cleanName, phone } },
+          options: {
+            data: { full_name: cleanName, phone },
+            emailRedirectTo: `${redirectTo}/login`,
+          },
         });
         if (error) {
           set({ loading: false, error: error.message });

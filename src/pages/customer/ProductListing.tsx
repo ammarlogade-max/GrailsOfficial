@@ -5,6 +5,7 @@ import { useCatalogStore } from "../../store/catalogStore";
 import ProductGrid from "../../components/customer/ProductGrid";
 import type { Product } from "../../data/types";
 import { useSEO, SITE_URL } from "../../lib/useSEO";
+import { getVisibleProducts } from "../../lib/catalogVisibility";
 
 export default function ProductListing() {
   const { slug } = useParams();
@@ -21,9 +22,10 @@ export default function ProductListing() {
 
   const collection = slug ? collections.find((c) => c.slug === slug) : null;
   const category = categorySlug ? categories.find((c) => c.slug === categorySlug) : null;
-  const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products]);
+  const visibleProducts = getVisibleProducts(products);
+  const brands = useMemo(() => Array.from(new Set(visibleProducts.map((p) => p.brand))).sort(), [visibleProducts]);
 
-  let list: Product[] = products;
+  let list: Product[] = visibleProducts;
   if (collection) list = collection.productIds.map((id) => products.find((p) => p.id === id)).filter(Boolean) as Product[];
   if (category) list = list.filter((p) => p.categoryId === category.id);
   if (q) list = list.filter((p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));

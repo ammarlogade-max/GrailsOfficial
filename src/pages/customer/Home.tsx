@@ -14,13 +14,15 @@ import Rating from "../../components/ui/Rating";
 import type { HomepageSection } from "../../store/cmsStore";
 import type { Product } from "../../data/types";
 import { useSEO, SITE_URL } from "../../lib/useSEO";
+import { getVisibleProducts } from "../../lib/catalogVisibility";
 
 function resolveProducts(section: HomepageSection, products: Product[], collections: ReturnType<typeof useCatalogStore.getState>["collections"]): Product[] {
+  const visibleProducts = getVisibleProducts(products);
   let list: Product[] = [];
-  if (section.sectionType === "new_arrivals") list = [...products].filter((p) => p.newArrival || true).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-  else if (section.sectionType === "best_sellers") list = [...products].sort((a, b) => b.totalSold - a.totalSold);
-  else if (section.sectionType === "trending") list = products.filter((p) => p.trending);
-  else if (section.sectionType === "featured") list = products.filter((p) => p.featured);
+  if (section.sectionType === "new_arrivals") list = [...visibleProducts].filter((p) => p.newArrival || true).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+  else if (section.sectionType === "best_sellers") list = [...visibleProducts].sort((a, b) => b.totalSold - a.totalSold);
+  else if (section.sectionType === "trending") list = visibleProducts.filter((p) => p.trending);
+  else if (section.sectionType === "featured") list = visibleProducts.filter((p) => p.featured);
   else if (section.sectionType === "collection") {
     const col = collections.find((c) => c.id === section.collectionId);
     list = col ? (col.productIds.map((id) => products.find((p) => p.id === id)).filter(Boolean) as Product[]) : [];
@@ -101,7 +103,7 @@ export default function Home() {
               title={section.title}
               subtitle={section.subtitle}
               instagramUrl={settings.instagramUrl}
-              products={[...products].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))}
+              products={[...getVisibleProducts(products)].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))}
             />
           );
         }

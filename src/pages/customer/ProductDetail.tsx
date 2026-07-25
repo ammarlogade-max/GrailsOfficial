@@ -12,12 +12,14 @@ import Rating from "../../components/ui/Rating";
 import ProductGrid from "../../components/customer/ProductGrid";
 import { formatDate, formatINR } from "../../lib/format";
 import { useSEO, SITE_URL } from "../../lib/useSEO";
+import { getVisibleProducts } from "../../lib/catalogVisibility";
 
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { products, categories } = useCatalogStore();
-  const product = products.find((p) => p.slug === slug);
+  const visibleProducts = getVisibleProducts(products);
+  const product = visibleProducts.find((p) => p.slug === slug);
   const allReviews = useReviewsStore((s) => s.reviews);
   const fetchForProduct = useReviewsStore((s) => s.fetchForProduct);
   const addReview = useReviewsStore((s) => s.addReview);
@@ -70,8 +72,8 @@ export default function ProductDetail() {
 
   const related = useMemo(() => {
     if (!product) return [];
-    return products.filter((p) => p.categoryId === product.categoryId && p.id !== product.id).slice(0, 4);
-  }, [products, product]);
+    return visibleProducts.filter((p) => p.categoryId === product.categoryId && p.id !== product.id).slice(0, 4);
+  }, [visibleProducts, product]);
 
   useSEO({
     title: product ? product.name : "Product Not Found",

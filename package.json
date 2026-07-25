@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "seed:demo": "tsx scripts/seed-demo-catalog.ts"
+    "seed:demo": "tsx scripts/seed-demo-catalog.ts",
+    "promote-admin": "tsx scripts/promote-admin.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.6",
@@ -25,8 +26,9 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4.3.2",
-    "@types/node": "^24.13.2",
+    "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
@@ -38,5 +40,20 @@
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   },
-  "description": "UrbanKicks — interactive client-presentation prototype (frontend-only, mock data)"
+  "description": "UrbanKicks — interactive client-presentation prototype (frontend-only, mock data)",
+  "main": "postcss.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ammarlogade-max/GrailsOfficial.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ammarlogade-max/GrailsOfficial/issues"
+  },
+  "homepage": "https://github.com/ammarlogade-max/GrailsOfficial#readme"
 }

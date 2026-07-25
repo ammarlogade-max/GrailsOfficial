@@ -28,7 +28,7 @@ export default function ProductEditor() {
       returnPolicy: "7-day easy return & exchange policy.",
       price: 0, originalPrice: 0, images: [DEFAULT_PHOTO, DEFAULT_PHOTO, DEFAULT_PHOTO],
       availableSizes: [6, 7, 8, 9, 10, 11], availableColors: [{ name: "Default", hex: "#0a0a0a" }],
-      material: "", weight: 300, status: "draft",
+      material: "", weight: 300, status: "published",
       featured: false, trending: false, bestSeller: false, newArrival: true,
       stock: 0, lowStockThreshold: 10,
       seoTitle: "", seoDescription: "", seoKeywords: "",
@@ -95,6 +95,7 @@ export default function ProductEditor() {
               <div>
                 <label className="field-label">Category</label>
                 <select value={form.categoryId} onChange={(e) => update("categoryId", e.target.value)} className="select">
+                  {!categories.length && <option value="">No categories found</option>}
                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>

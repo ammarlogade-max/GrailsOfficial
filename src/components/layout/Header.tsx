@@ -92,32 +92,35 @@ export default function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-[100] lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-2xl p-5 flex flex-col gap-1 animate-fade-up">
-            <div className="flex items-center justify-between mb-4">
+          <div data-testid="mobile-menu-panel" className="fixed inset-y-0 left-0 w-[min(22rem,calc(100vw-2rem))] bg-white shadow-2xl flex flex-col animate-fade-up overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-neutral-200 shrink-0">
               <span className="font-display text-xl">{settings.brandName}</span>
-              <button onClick={() => setMobileOpen(false)}>
+              <button onClick={() => setMobileOpen(false)} className="p-2 -mr-2" aria-label="Close menu">
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={submitSearch} className="relative mb-3">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="input pl-9 !py-2 text-sm" />
-            </form>
-            {categories.map((c) => (
-              <Link
-                key={c.id}
-                to={`/products?category=${c.slug}`}
-                onClick={() => setMobileOpen(false)}
-                className="py-2.5 font-label text-base border-b border-neutral-100"
-              >
-                {c.icon} {c.name}
+            <div className="flex-1 overflow-y-auto p-5">
+              <form onSubmit={submitSearch} className="relative mb-3">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="input pl-9 !py-2 text-sm" />
+              </form>
+              {categories.map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/products?category=${c.slug}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 py-3 font-label text-base border-b border-neutral-100 text-neutral-900"
+                >
+                  <span aria-hidden="true">{c.icon}</span>
+                  <span>{c.name}</span>
+                </Link>
+              ))}
+              <Link to={user ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="block py-3 font-label text-base mt-2 text-neutral-900">
+                {user ? "My Account" : "Login / Register"}
               </Link>
-            ))}
-            <Link to={user ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="py-2.5 font-label text-base mt-2">
-              {user ? "My Account" : "Login / Register"}
-            </Link>
+            </div>
           </div>
         </div>
       )}

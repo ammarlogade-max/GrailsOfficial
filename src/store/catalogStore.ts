@@ -171,7 +171,7 @@ export const useCatalogStore = create<CatalogState>()(
             slug: product.slug,
             sku: product.sku,
             barcode: product.barcode || null,
-            category_id: product.categoryId,
+            category_id: isUuid(product.categoryId) ? product.categoryId : null,
             brand: product.brand,
             description: product.description,
             highlights: product.highlights,
@@ -294,7 +294,10 @@ export const useCatalogStore = create<CatalogState>()(
           const { error } = await supabase.from("categories").delete().eq("id", id);
           if (error) throw error;
         }
-        set((s) => ({ categories: s.categories.filter((c) => c.id !== id) }));
+        set((s) => ({
+          categories: s.categories.filter((c) => c.id !== id),
+          products: s.products.map((p) => (p.categoryId === id ? { ...p, categoryId: "" } : p)),
+        }));
       },
 
       upsertCollection: async (rawCollection) => {

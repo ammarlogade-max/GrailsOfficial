@@ -13,6 +13,7 @@ export const isSupabaseConfigured = Boolean(
   url && anonKey && !url.includes("your-project-ref") && !anonKey.includes("your-anon-public-key")
 );
 
+
 if (!isSupabaseConfigured && import.meta.env.DEV) {
   // eslint-disable-next-line no-console
   console.warn(
