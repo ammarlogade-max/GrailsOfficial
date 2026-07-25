@@ -45,7 +45,7 @@ export default function ProductListing() {
 
   useSEO({
     title: pageTitle,
-    description: collection?.description || category?.description || `Shop ${pageTitle.toLowerCase()} at UrbanKicks — premium replica sneakers with COD and free shipping above ₹999.`,
+    description: collection?.description || category?.description || `Shop ${pageTitle.toLowerCase()} at Grail's Official — premium replica sneakers with COD and free shipping above ₹999.`,
     path: slug ? `/collections/${slug}` : categorySlug ? `/products?category=${categorySlug}` : "/products",
     index: !q, // search-result pages are noindex; category/collection pages are indexable
     jsonLd: {

@@ -5,7 +5,7 @@ import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { sanitizeText } from "../lib/sanitize";
 
 const seed: FAQ[] = [
-  { id: "faq-1", question: "Are these products authentic?", answer: "UrbanKicks sells premium replica sneakers — we're upfront that these are not authentic brand-licensed products. We focus on build quality and value for money.", category: "general", sortOrder: 1, active: true },
+  { id: "faq-1", question: "Are these products authentic?", answer: "Grail's Official sells premium replica sneakers — we're upfront that these are not authentic brand-licensed products. We focus on build quality and value for money.", category: "general", sortOrder: 1, active: true },
   { id: "faq-2", question: "How long does delivery take?", answer: "Most orders are delivered within 2-5 business days depending on your location. You'll get tracking details once your order ships.", category: "shipping", sortOrder: 2, active: true },
   { id: "faq-3", question: "Is Cash on Delivery available?", answer: "Yes — COD is available on all orders with a small COD handling fee. You can also pay online via UPI or card for a smoother checkout.", category: "payments", sortOrder: 3, active: true },
   { id: "faq-4", question: "What's your return policy?", answer: "We offer a 7-day easy return and exchange window from the date of delivery, as long as the product is unused and in its original packaging.", category: "returns", sortOrder: 4, active: true },

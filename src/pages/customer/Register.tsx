@@ -34,7 +34,7 @@ export default function Register() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-display text-3xl text-center">Create Account</h1>
-      <p className="text-neutral-500 text-sm text-center mt-1">Join UrbanKicks for faster checkout & order tracking</p>
+      <p className="text-neutral-500 text-sm text-center mt-1">Join Grail's Official for faster checkout & order tracking</p>
       <form onSubmit={submit} className="card p-6 mt-6 space-y-4">
         <div>
           <label className="field-label">Full Name</label>
