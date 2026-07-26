@@ -116,7 +116,7 @@ export default function Dashboard() {
       </div>
 
       <div className="card p-5 text-center py-4 text-xs text-neutral-400">
-        Data last synced {formatDate(new Date().toISOString())} — demo data, resets available in Settings.
+        Data last synced {formatDate(new Date().toISOString())}
       </div>
     </div>
   );

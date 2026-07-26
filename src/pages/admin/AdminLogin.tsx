@@ -2,13 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, Mail, ShieldCheck } from "lucide-react";
 import { useAdminAuthStore } from "../../store/authStore";
-import { isSupabaseConfigured } from "../../lib/supabase";
 
 export default function AdminLogin() {
   const { login, verifyMfa, mfaPending } = useAdminAuthStore();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(isSupabaseConfigured ? "" : "admin@urbankicks.in");
-  const [password, setPassword] = useState(isSupabaseConfigured ? "" : "admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -93,7 +92,6 @@ export default function AdminLogin() {
           </div>
           {error && <p className="text-sm text-rose-600">{error}</p>}
           <button disabled={submitting} className="btn btn-dark w-full">{submitting ? "Signing in..." : "Sign In"}</button>
-          {!isSupabaseConfigured && <p className="text-xs text-neutral-400 text-center">Demo mode — any email/password signs you in.</p>}
         </form>
       </div>
     </div>

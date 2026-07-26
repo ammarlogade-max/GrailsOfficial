@@ -1,24 +1,22 @@
 import { useEffect, useState } from "react";
 import { Plus, MapPin, Trash2, Loader2 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
-import { customers } from "../../data/customers";
 import { useToastStore } from "../../store/toastStore";
 import Modal from "../../components/ui/Modal";
-import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { supabase } from "../../lib/supabase";
 import type { Address } from "../../data/types";
 
 export default function AccountAddresses() {
   const user = useAuthStore((s) => s.user);
   const showToast = useToastStore((s) => s.show);
-  const mockExisting = customers.find((c) => c.id === user?.id)?.addresses || [];
-  const [addresses, setAddresses] = useState<Address[]>(isSupabaseConfigured ? [] : mockExisting);
-  const [loading, setLoading] = useState(isSupabaseConfigured);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ label: "Home", name: user?.fullName || "", phone: user?.phone || "", line1: "", city: "", state: "Maharashtra", pincode: "" });
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !user?.id) return;
+    if (!user?.id) return;
     setLoading(true);
     supabase
       .from("addresses")
@@ -51,7 +49,7 @@ export default function AccountAddresses() {
     e.preventDefault();
     setSaving(true);
     try {
-      if (isSupabaseConfigured && user?.id) {
+      if (user?.id) {
         const { data, error } = await supabase
           .from("addresses")
           .insert({ user_id: user.id, is_default: addresses.length === 0, ...form })
@@ -62,8 +60,6 @@ export default function AccountAddresses() {
           ...a,
           { id: data.id, label: data.label, name: data.name, phone: data.phone, line1: data.line1, city: data.city, state: data.state, pincode: data.pincode, isDefault: data.is_default },
         ]);
-      } else {
-        setAddresses((a) => [...a, { id: `addr-new-${Date.now()}`, isDefault: a.length === 0, ...form }]);
       }
       setOpen(false);
       showToast("Address added", "success");
@@ -76,10 +72,8 @@ export default function AccountAddresses() {
 
   async function removeAddress(id: string) {
     try {
-      if (isSupabaseConfigured) {
-        const { error } = await supabase.from("addresses").delete().eq("id", id);
-        if (error) throw error;
-      }
+      const { error } = await supabase.from("addresses").delete().eq("id", id);
+      if (error) throw error;
       setAddresses((s) => s.filter((x) => x.id !== id));
       showToast("Address removed", "success");
     } catch (err) {

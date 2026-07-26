@@ -1,8 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { SupportTicket, ReturnRequest } from "../data/types";
-import { supportTickets as seedTickets, returnRequests as seedReturns } from "../data/support";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { sanitizeText } from "../lib/sanitize";
 
 interface SupportState {
@@ -14,7 +12,6 @@ interface SupportState {
   updateTicketStatus: (id: string, status: SupportTicket["status"]) => Promise<void>;
   replyTicket: (id: string, body: string) => Promise<void>;
   updateReturnStatus: (id: string, status: ReturnRequest["status"]) => Promise<void>;
-  resetDemo: () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,59 +52,47 @@ function mapReturn(row: any): ReturnRequest {
 }
 
 export const useSupportStore = create<SupportState>()(
-  persist(
-    (set) => ({
-      tickets: isSupabaseConfigured ? [] : seedTickets,
-      returns: isSupabaseConfigured ? [] : seedReturns,
-      loading: false,
-      loaded: !isSupabaseConfigured,
+  (set) => ({
+    tickets: [],
+    returns: [],
+    loading: false,
+    loaded: false,
 
-      fetchAll: async () => {
-        if (!isSupabaseConfigured) return;
-        set({ loading: true });
-        const [{ data: tickets, error: tErr }, { data: returns, error: rErr }] = await Promise.all([
-          supabase.from("support_tickets").select("*, support_messages(*)").order("created_at", { ascending: false }),
-          supabase.from("return_requests").select("*, orders(order_number), profiles(full_name)").order("created_at", { ascending: false }),
-        ]);
-        if (tErr) console.error("fetch support_tickets failed:", tErr.message);
-        if (rErr) console.error("fetch return_requests failed:", rErr.message);
-        set({ tickets: (tickets || []).map(mapTicket), returns: (returns || []).map(mapReturn), loading: false, loaded: true });
-      },
+    fetchAll: async () => {
+      set({ loading: true });
+      const [{ data: tickets, error: tErr }, { data: returns, error: rErr }] = await Promise.all([
+        supabase.from("support_tickets").select("*, support_messages(*)").order("created_at", { ascending: false }),
+        supabase.from("return_requests").select("*, orders(order_number), profiles(full_name)").order("created_at", { ascending: false }),
+      ]);
+      if (tErr) console.error("fetch support_tickets failed:", tErr.message);
+      if (rErr) console.error("fetch return_requests failed:", rErr.message);
+      set({ tickets: (tickets || []).map(mapTicket), returns: (returns || []).map(mapReturn), loading: false, loaded: true });
+    },
 
-      updateTicketStatus: async (id, status) => {
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("support_tickets").update({ status }).eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ tickets: s.tickets.map((t) => (t.id === id ? { ...t, status } : t)) }));
-      },
+    updateTicketStatus: async (id, status) => {
+      const { error } = await supabase.from("support_tickets").update({ status }).eq("id", id);
+      if (error) throw error;
+      set((s) => ({ tickets: s.tickets.map((t) => (t.id === id ? { ...t, status } : t)) }));
+    },
 
-      replyTicket: async (id, rawBody) => {
-        const body = sanitizeText(rawBody);
-        const at = new Date().toISOString();
-        if (isSupabaseConfigured) {
-          const { error: msgErr } = await supabase.from("support_messages").insert({ ticket_id: id, sender: "staff", body });
-          if (msgErr) throw msgErr;
-          const { error: statusErr } = await supabase.from("support_tickets").update({ status: "waiting_customer" }).eq("id", id);
-          if (statusErr) throw statusErr;
-        }
-        set((s) => ({
-          tickets: s.tickets.map((t) =>
-            t.id === id ? { ...t, status: "waiting_customer", messages: [...t.messages, { sender: "staff" as const, body, at }] } : t
-          ),
-        }));
-      },
+    replyTicket: async (id, rawBody) => {
+      const body = sanitizeText(rawBody);
+      const at = new Date().toISOString();
+      const { error: msgErr } = await supabase.from("support_messages").insert({ ticket_id: id, sender: "staff", body });
+      if (msgErr) throw msgErr;
+      const { error: statusErr } = await supabase.from("support_tickets").update({ status: "waiting_customer" }).eq("id", id);
+      if (statusErr) throw statusErr;
+      set((s) => ({
+        tickets: s.tickets.map((t) =>
+          t.id === id ? { ...t, status: "waiting_customer", messages: [...t.messages, { sender: "staff" as const, body, at }] } : t
+        ),
+      }));
+    },
 
-      updateReturnStatus: async (id, status) => {
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("return_requests").update({ status }).eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ returns: s.returns.map((r) => (r.id === id ? { ...r, status } : r)) }));
-      },
-
-      resetDemo: () => set({ tickets: seedTickets, returns: seedReturns }),
-    }),
-    { name: "urbankicks-support", partialize: (state) => (isSupabaseConfigured ? {} : { tickets: state.tickets, returns: state.returns }) }
-  )
+    updateReturnStatus: async (id, status) => {
+      const { error } = await supabase.from("return_requests").update({ status }).eq("id", id);
+      if (error) throw error;
+      set((s) => ({ returns: s.returns.map((r) => (r.id === id ? { ...r, status } : r)) }));
+    },
+  })
 );

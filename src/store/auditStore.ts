@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import type { AuditLogEntry } from "../data/types";
-import { auditLogs as seed } from "../data/admin-extras";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 interface AuditState {
   logs: AuditLogEntry[];
@@ -26,12 +25,11 @@ function mapLog(row: any): AuditLogEntry {
 
 // Read-only: audit logs are written by the database/backend, never edited from the admin UI.
 export const useAuditStore = create<AuditState>()((set) => ({
-  logs: isSupabaseConfigured ? [] : seed,
+  logs: [],
   loading: false,
-  loaded: !isSupabaseConfigured,
+  loaded: false,
 
   fetchAll: async () => {
-    if (!isSupabaseConfigured) return;
     set({ loading: true });
     const { data, error } = await supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(100);
     if (error) console.error("fetch audit_logs failed:", error.message);

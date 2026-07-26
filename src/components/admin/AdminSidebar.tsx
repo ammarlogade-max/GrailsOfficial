@@ -121,9 +121,6 @@ export default function AdminSidebar({ mobileOpen, onClose }: { mobileOpen: bool
           </div>
         ))}
       </div>
-      <div className="px-5 py-3 border-t border-white/10 text-xs text-neutral-500 shrink-0">
-        Demo build — no live backend
-      </div>
     </div>
   );
 

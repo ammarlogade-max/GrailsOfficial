@@ -1,10 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { Product, Category, Collection } from "../data/types";
-import { products as seedProducts } from "../data/products";
-import { categories as seedCategories } from "../data/categories";
-import { collections as seedCollections } from "../data/collections";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { isUuid } from "../lib/isUuid";
 import { sanitizeText } from "../lib/sanitize";
 
@@ -23,7 +19,6 @@ interface CatalogState {
   deleteCategory: (id: string) => Promise<void>;
   upsertCollection: (collection: Collection) => Promise<void>;
   deleteCollection: (id: string) => Promise<void>;
-  resetDemo: () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -124,244 +119,213 @@ async function saveProductChildren(productId: string, product: Product) {
 }
 
 export const useCatalogStore = create<CatalogState>()(
-  persist(
-    (set) => ({
-      products: isSupabaseConfigured ? [] : seedProducts,
-      categories: isSupabaseConfigured ? [] : seedCategories,
-      collections: isSupabaseConfigured ? [] : seedCollections,
-      loading: false,
-      loaded: !isSupabaseConfigured,
+  (set) => ({
+    products: [],
+    categories: [],
+    collections: [],
+    loading: false,
+    loaded: false,
 
-      fetchAll: async () => {
-        if (!isSupabaseConfigured) return;
-        set({ loading: true });
-        const [{ data: cats, error: catErr }, { data: prods, error: prodErr }, { data: cols, error: colErr }] = await Promise.all([
-          supabase.from("categories").select("*").order("sort_order"),
-          supabase.from("products").select("*, product_images(*), product_sizes(*), product_colors(*)").order("sort_order"),
-          supabase.from("collections").select("*, collection_products(*)"),
-        ]);
-        if (catErr) console.error("fetchAll categories failed:", catErr.message);
-        if (prodErr) console.error("fetchAll products failed:", prodErr.message);
-        if (colErr) console.error("fetchAll collections failed:", colErr.message);
-        set({
-          categories: (cats || []).map(mapCategory),
-          products: (prods || []).map(mapProduct),
-          collections: (cols || []).map(mapCollection),
-          loading: false,
-          loaded: true,
-        });
-      },
+    fetchAll: async () => {
+      set({ loading: true });
+      const [{ data: cats, error: catErr }, { data: prods, error: prodErr }, { data: cols, error: colErr }] = await Promise.all([
+        supabase.from("categories").select("*").order("sort_order"),
+        supabase.from("products").select("*, product_images(*), product_sizes(*), product_colors(*)").order("sort_order"),
+        supabase.from("collections").select("*, collection_products(*)"),
+      ]);
+      if (catErr) console.error("fetchAll categories failed:", catErr.message);
+      if (prodErr) console.error("fetchAll products failed:", prodErr.message);
+      if (colErr) console.error("fetchAll collections failed:", colErr.message);
+      set({
+        categories: (cats || []).map(mapCategory),
+        products: (prods || []).map(mapProduct),
+        collections: (cols || []).map(mapCollection),
+        loading: false,
+        loaded: true,
+      });
+    },
 
-      upsertProduct: async (rawProduct) => {
-        const product: Product = {
-          ...rawProduct,
-          name: sanitizeText(rawProduct.name),
-          description: sanitizeText(rawProduct.description),
-          highlights: rawProduct.highlights.map(sanitizeText),
-          material: sanitizeText(rawProduct.material),
-          shippingInfo: sanitizeText(rawProduct.shippingInfo),
-          returnPolicy: sanitizeText(rawProduct.returnPolicy),
-          seoTitle: sanitizeText(rawProduct.seoTitle),
-          seoDescription: sanitizeText(rawProduct.seoDescription),
-        };
-        if (isSupabaseConfigured) {
-          const isNew = !isUuid(product.id);
-          const payload = {
-            name: product.name,
-            slug: product.slug,
-            sku: product.sku,
-            barcode: product.barcode || null,
-            category_id: isUuid(product.categoryId) ? product.categoryId : null,
-            brand: product.brand,
-            description: product.description,
-            highlights: product.highlights,
-            specifications: product.specifications,
-            shipping_info: product.shippingInfo,
-            return_policy: product.returnPolicy,
-            price: product.price,
-            original_price: product.originalPrice,
-            material: product.material,
-            weight: product.weight,
-            status: product.status,
-            featured: product.featured,
-            trending: product.trending,
-            best_seller: product.bestSeller,
-            new_arrival: product.newArrival,
-            stock: product.stock,
-            low_stock_threshold: product.lowStockThreshold,
-            seo_title: product.seoTitle,
-            seo_description: product.seoDescription,
-            seo_keywords: product.seoKeywords,
-            sort_order: product.sortOrder,
+    upsertProduct: async (rawProduct) => {
+      const product: Product = {
+        ...rawProduct,
+        name: sanitizeText(rawProduct.name),
+        description: sanitizeText(rawProduct.description),
+        highlights: rawProduct.highlights.map(sanitizeText),
+        material: sanitizeText(rawProduct.material),
+        shippingInfo: sanitizeText(rawProduct.shippingInfo),
+        returnPolicy: sanitizeText(rawProduct.returnPolicy),
+        seoTitle: sanitizeText(rawProduct.seoTitle),
+        seoDescription: sanitizeText(rawProduct.seoDescription),
+      };
+      const isNew = !isUuid(product.id);
+      const payload = {
+        name: product.name,
+        slug: product.slug,
+        sku: product.sku,
+        barcode: product.barcode || null,
+        category_id: isUuid(product.categoryId) ? product.categoryId : null,
+        brand: product.brand,
+        description: product.description,
+        highlights: product.highlights,
+        specifications: product.specifications,
+        shipping_info: product.shippingInfo,
+        return_policy: product.returnPolicy,
+        price: product.price,
+        original_price: product.originalPrice,
+        material: product.material,
+        weight: product.weight,
+        status: product.status,
+        featured: product.featured,
+        trending: product.trending,
+        best_seller: product.bestSeller,
+        new_arrival: product.newArrival,
+        stock: product.stock,
+        low_stock_threshold: product.lowStockThreshold,
+        seo_title: product.seoTitle,
+        seo_description: product.seoDescription,
+        seo_keywords: product.seoKeywords,
+        sort_order: product.sortOrder,
+      };
+      let savedId = product.id;
+      if (isNew) {
+        let attempt = payload;
+        let { data, error } = await supabase.from("products").insert(attempt).select("id").single();
+        if (error && (error.code === "23505" || /unique/i.test(error.message || ""))) {
+          const suffix = Math.random().toString(36).slice(2, 6);
+          attempt = {
+            ...attempt,
+            slug: `${attempt.slug}-${suffix}`,
+            sku: `${attempt.sku}-${suffix}`,
           };
-          let savedId = product.id;
-          if (isNew) {
-            const { data, error } = await supabase.from("products").insert(payload).select("id").single();
-            if (error) throw error;
-            savedId = data.id;
-          } else {
-            const { error } = await supabase.from("products").update(payload).eq("id", product.id);
-            if (error) throw error;
-          }
-          await saveProductChildren(savedId, product);
-          const { data: full, error: refetchErr } = await supabase
-            .from("products")
-            .select("*, product_images(*), product_sizes(*), product_colors(*)")
-            .eq("id", savedId)
-            .single();
-          if (refetchErr) throw refetchErr;
-          const saved = mapProduct(full);
-          set((s) => ({
-            products: s.products.some((p) => p.id === saved.id) ? s.products.map((p) => (p.id === saved.id ? saved : p)) : [saved, ...s.products],
-          }));
-          return;
+          const retry = await supabase.from("products").insert(attempt).select("id").single();
+          data = retry.data || data;
+          error = retry.error;
         }
-        set((s) => {
-          const exists = s.products.some((p) => p.id === product.id);
-          return { products: exists ? s.products.map((p) => (p.id === product.id ? product : p)) : [product, ...s.products] };
-        });
-      },
+        if (error || !data) throw new Error(error?.message || "Failed to create product");
+        savedId = data.id;
+      } else {
+        const { error } = await supabase.from("products").update(payload).eq("id", product.id);
+        if (error) throw error;
+      }
+      await saveProductChildren(savedId, product);
+      const { data: full, error: refetchErr } = await supabase
+        .from("products")
+        .select("*, product_images(*), product_sizes(*), product_colors(*)")
+        .eq("id", savedId)
+        .single();
+      if (refetchErr) throw refetchErr;
+      const saved = mapProduct(full);
+      set((s) => ({
+        products: s.products.some((p) => p.id === saved.id) ? s.products.map((p) => (p.id === saved.id ? saved : p)) : [saved, ...s.products],
+      }));
+    },
 
-      deleteProduct: async (id) => {
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("products").delete().eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ products: s.products.filter((p) => p.id !== id) }));
-      },
+    deleteProduct: async (id) => {
+      const { error } = await supabase.from("products").delete().eq("id", id);
+      if (error) throw error;
+      set((s) => ({ products: s.products.filter((p) => p.id !== id) }));
+    },
 
-      updateStock: async (id, stock) => {
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("products").update({ stock }).eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ products: s.products.map((p) => (p.id === id ? { ...p, stock } : p)) }));
-      },
+    updateStock: async (id, stock) => {
+      const { error } = await supabase.from("products").update({ stock }).eq("id", id);
+      if (error) throw error;
+      set((s) => ({ products: s.products.map((p) => (p.id === id ? { ...p, stock } : p)) }));
+    },
 
-      bulkUpdateStock: async (updates) => {
-        if (isSupabaseConfigured) {
-          // No native bulk-update-with-different-values in PostgREST, so
-          // fire them concurrently rather than one network round-trip per
-          // row sequentially.
-          const results = await Promise.allSettled(
-            updates.map(({ id, stock }) => supabase.from("products").update({ stock }).eq("id", id))
-          );
-          const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && r.value.error));
-          if (failed.length > 0) throw new Error(`${failed.length} of ${updates.length} products failed to update`);
-        }
-        set((s) => ({
-          products: s.products.map((p) => {
-            const match = updates.find((u) => u.id === p.id);
-            return match ? { ...p, stock: match.stock } : p;
-          }),
-        }));
-      },
+    bulkUpdateStock: async (updates) => {
+      const results = await Promise.allSettled(
+        updates.map(({ id, stock }) => supabase.from("products").update({ stock }).eq("id", id))
+      );
+      const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && r.value.error));
+      if (failed.length > 0) throw new Error(`${failed.length} of ${updates.length} products failed to update`);
+      set((s) => ({
+        products: s.products.map((p) => {
+          const match = updates.find((u) => u.id === p.id);
+          return match ? { ...p, stock: match.stock } : p;
+        }),
+      }));
+    },
 
-      upsertCategory: async (rawCategory) => {
-        const category: Category = { ...rawCategory, name: sanitizeText(rawCategory.name), description: sanitizeText(rawCategory.description), seoTitle: sanitizeText(rawCategory.seoTitle), seoDescription: sanitizeText(rawCategory.seoDescription) };
-        if (isSupabaseConfigured) {
-          const isNew = !isUuid(category.id);
-          const payload = {
-            name: category.name,
-            slug: category.slug,
-            description: category.description,
-            icon: category.icon,
-            sort_order: category.sortOrder,
-            seo_title: category.seoTitle,
-            seo_description: category.seoDescription,
-            active: category.active,
-          };
-          if (isNew) {
-            const { data, error } = await supabase.from("categories").insert(payload).select().single();
-            if (error) throw error;
-            set((s) => ({ categories: [...s.categories, mapCategory(data)] }));
-          } else {
-            const { data, error } = await supabase.from("categories").update(payload).eq("id", category.id).select().single();
-            if (error) throw error;
-            const saved = mapCategory(data);
-            set((s) => ({ categories: s.categories.map((c) => (c.id === saved.id ? saved : c)) }));
-          }
-          return;
-        }
-        set((s) => {
-          const exists = s.categories.some((c) => c.id === category.id);
-          return { categories: exists ? s.categories.map((c) => (c.id === category.id ? category : c)) : [...s.categories, category] };
-        });
-      },
+    upsertCategory: async (rawCategory) => {
+      const category: Category = { ...rawCategory, name: sanitizeText(rawCategory.name), description: sanitizeText(rawCategory.description), seoTitle: sanitizeText(rawCategory.seoTitle), seoDescription: sanitizeText(rawCategory.seoDescription) };
+      const isNew = !isUuid(category.id);
+      const payload = {
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        icon: category.icon,
+        sort_order: category.sortOrder,
+        seo_title: category.seoTitle,
+        seo_description: category.seoDescription,
+        active: category.active,
+      };
+      if (isNew) {
+        const { data, error } = await supabase.from("categories").insert(payload).select().single();
+        if (error) throw error;
+        set((s) => ({ categories: [...s.categories, mapCategory(data)] }));
+      } else {
+        const { data, error } = await supabase.from("categories").update(payload).eq("id", category.id).select().single();
+        if (error) throw error;
+        const saved = mapCategory(data);
+        set((s) => ({ categories: s.categories.map((c) => (c.id === saved.id ? saved : c)) }));
+      }
+    },
 
-      deleteCategory: async (id) => {
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("categories").delete().eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({
-          categories: s.categories.filter((c) => c.id !== id),
-          products: s.products.map((p) => (p.categoryId === id ? { ...p, categoryId: "" } : p)),
-        }));
-      },
+    deleteCategory: async (id) => {
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) throw error;
+      set((s) => ({
+        categories: s.categories.filter((c) => c.id !== id),
+        products: s.products.map((p) => (p.categoryId === id ? { ...p, categoryId: "" } : p)),
+      }));
+    },
 
-      upsertCollection: async (rawCollection) => {
-        const collection: Collection = { ...rawCollection, name: sanitizeText(rawCollection.name), description: sanitizeText(rawCollection.description), sectionTitle: sanitizeText(rawCollection.sectionTitle) };
-        if (isSupabaseConfigured) {
-          const isNew = !isUuid(collection.id);
-          const payload = {
-            name: collection.name,
-            slug: collection.slug,
-            description: collection.description,
-            section_title: collection.sectionTitle,
-            show_on_homepage: collection.showOnHomepage,
-            homepage_sort_order: collection.homepageSortOrder,
-            banner_photo_url: collection.bannerPhoto || null,
-            active: collection.active,
-          };
-          let savedId = collection.id;
-          if (isNew) {
-            const { data, error } = await supabase.from("collections").insert(payload).select("id").single();
-            if (error) throw error;
-            savedId = data.id;
-          } else {
-            const { error } = await supabase.from("collections").update(payload).eq("id", collection.id);
-            if (error) throw error;
-          }
-          await supabase.from("collection_products").delete().eq("collection_id", savedId);
-          if (collection.productIds.length) {
-            await supabase
-              .from("collection_products")
-              .insert(collection.productIds.map((pid, i) => ({ collection_id: savedId, product_id: pid, sort_order: i })));
-          }
-          const { data: full, error: refetchErr } = await supabase
-            .from("collections")
-            .select("*, collection_products(*)")
-            .eq("id", savedId)
-            .single();
-          if (refetchErr) throw refetchErr;
-          const saved = mapCollection(full);
-          set((s) => ({
-            collections: s.collections.some((c) => c.id === saved.id)
-              ? s.collections.map((c) => (c.id === saved.id ? saved : c))
-              : [...s.collections, saved],
-          }));
-          return;
-        }
-        set((s) => {
-          const exists = s.collections.some((c) => c.id === collection.id);
-          return { collections: exists ? s.collections.map((c) => (c.id === collection.id ? collection : c)) : [...s.collections, collection] };
-        });
-      },
+    upsertCollection: async (rawCollection) => {
+      const collection: Collection = { ...rawCollection, name: sanitizeText(rawCollection.name), description: sanitizeText(rawCollection.description), sectionTitle: sanitizeText(rawCollection.sectionTitle) };
+      const isNew = !isUuid(collection.id);
+      const payload = {
+        name: collection.name,
+        slug: collection.slug,
+        description: collection.description,
+        section_title: collection.sectionTitle,
+        show_on_homepage: collection.showOnHomepage,
+        homepage_sort_order: collection.homepageSortOrder,
+        banner_photo_url: collection.bannerPhoto || null,
+        active: collection.active,
+      };
+      let savedId = collection.id;
+      if (isNew) {
+        const { data, error } = await supabase.from("collections").insert(payload).select("id").single();
+        if (error) throw error;
+        savedId = data.id;
+      } else {
+        const { error } = await supabase.from("collections").update(payload).eq("id", collection.id);
+        if (error) throw error;
+      }
+      await supabase.from("collection_products").delete().eq("collection_id", savedId);
+      if (collection.productIds.length) {
+        await supabase
+          .from("collection_products")
+          .insert(collection.productIds.map((pid, i) => ({ collection_id: savedId, product_id: pid, sort_order: i })));
+      }
+      const { data: full, error: refetchErr } = await supabase
+        .from("collections")
+        .select("*, collection_products(*)")
+        .eq("id", savedId)
+        .single();
+      if (refetchErr) throw refetchErr;
+      const saved = mapCollection(full);
+      set((s) => ({
+        collections: s.collections.some((c) => c.id === saved.id)
+          ? s.collections.map((c) => (c.id === saved.id ? saved : c))
+          : [...s.collections, saved],
+      }));
+    },
 
-      deleteCollection: async (id) => {
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("collections").delete().eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ collections: s.collections.filter((c) => c.id !== id) }));
-      },
-
-      resetDemo: () => set({ products: seedProducts, categories: seedCategories, collections: seedCollections }),
-    }),
-    {
-      name: "urbankicks-catalog",
-      partialize: (state) => (isSupabaseConfigured ? {} : { products: state.products, categories: state.categories, collections: state.collections }),
-    }
-  )
+    deleteCollection: async (id) => {
+      const { error } = await supabase.from("collections").delete().eq("id", id);
+      if (error) throw error;
+      set((s) => ({ collections: s.collections.filter((c) => c.id !== id) }));
+    },
+  })
 );

@@ -4,13 +4,12 @@ import { Wallet, Smartphone, CreditCard } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
 import { useCatalogStore } from "../../store/catalogStore";
 import { useAuthStore } from "../../store/authStore";
-import { useOrdersStore } from "../../store/ordersStore";
 import { useCMSStore } from "../../store/cmsStore";
 import { useToastStore } from "../../store/toastStore";
 import ProductImage from "../../components/customer/ProductImage";
 import { formatINR } from "../../lib/format";
-import type { Order, OrderItem } from "../../data/types";
-import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import type { Order } from "../../data/types";
+import { supabase } from "../../lib/supabase";
 import { loadRazorpayScript, openRazorpayCheckout } from "../../lib/razorpay";
 import { useSEO } from "../../lib/useSEO";
 
@@ -20,7 +19,6 @@ export default function Checkout() {
   const { lines, clear, couponCode, discountAmount } = useCartStore();
   const { products } = useCatalogStore();
   const user = useAuthStore((s) => s.user);
-  const addOrder = useOrdersStore((s) => s.addOrder);
   const settings = useCMSStore((s) => s.settings);
   const showToast = useToastStore((s) => s.show);
   const navigate = useNavigate();
@@ -41,55 +39,6 @@ export default function Checkout() {
 
   function updateField(key: string, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
-  }
-
-  async function placeOrderMock() {
-    const orderItems: OrderItem[] = items.map((i) => ({
-      productId: i.product!.id,
-      productName: i.product!.name,
-      brand: i.product!.brand,
-      sku: i.product!.sku,
-      size: i.line.size,
-      color: i.line.color,
-      unitPrice: i.product!.price,
-      originalPrice: i.product!.originalPrice,
-      quantity: i.line.quantity,
-      photo: i.product!.images[0],
-    }));
-    const orderId = `order-${Date.now()}`;
-    const now = new Date().toISOString();
-    const order: Order = {
-      id: orderId,
-      orderNumber: `UK-${Math.floor(20260000 + Math.random() * 9999)}`,
-      customerId: user?.id || null,
-      guestEmail: user ? undefined : form.email,
-      guestPhone: user ? undefined : form.phone,
-      shippingName: form.name,
-      shippingPhone: form.phone,
-      shippingLine1: form.line1,
-      shippingLine2: form.line2,
-      shippingCity: form.city,
-      shippingState: form.state,
-      shippingPincode: form.pincode,
-      items: orderItems,
-      subtotal,
-      discountAmount,
-      shippingCharge: shipping,
-      codCharge,
-      total,
-      paymentMethod: payment,
-      paymentStatus: payment === "cod" ? "pending" : "paid",
-      couponCode: couponCode || undefined,
-      status: "confirmed",
-      createdAt: now,
-      updatedAt: now,
-      statusHistory: [{ status: "pending", at: now }, { status: "confirmed", at: now }],
-    };
-    await new Promise((r) => setTimeout(r, 700));
-    addOrder(order);
-    clear();
-    showToast("Order placed successfully!", "success");
-    navigate(`/order-success/${orderId}`);
   }
 
   function buildOrderPayload() {
@@ -172,14 +121,8 @@ export default function Checkout() {
     if (items.length === 0) return;
     setPlacing(true);
     try {
-      if (isSupabaseConfigured) {
-        await placeOrderReal();
-        // Razorpay flow resolves `placing` inside its own handler/dismiss callback
-        if (payment === "cod") setPlacing(false);
-      } else {
-        await placeOrderMock();
-        setPlacing(false);
-      }
+      await placeOrderReal();
+      if (payment === "cod") setPlacing(false);
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Could not place order", "error");
       setPlacing(false);

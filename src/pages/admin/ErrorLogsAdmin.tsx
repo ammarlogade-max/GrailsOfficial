@@ -3,7 +3,6 @@ import { AlertTriangle, Info, AlertCircle, CheckCircle2, Loader2 } from "lucide-
 import { useErrorLogStore } from "../../store/errorLogStore";
 import { useToastStore } from "../../store/toastStore";
 import { formatDateTime } from "../../lib/format";
-import { isSupabaseConfigured } from "../../lib/supabase";
 
 const levelIcon = { error: AlertCircle, warning: AlertTriangle, info: Info };
 const levelColor = { error: "text-rose-500 bg-rose-50", warning: "text-amber-500 bg-amber-50", info: "text-blue-500 bg-blue-50" };
@@ -21,15 +20,6 @@ export default function ErrorLogsAdmin() {
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed to update", "error");
     }
-  }
-
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="card p-8 text-center">
-        <AlertCircle size={32} className="mx-auto text-neutral-300 mb-3" />
-        <p className="text-sm text-neutral-500">Error logging only runs against a real deployment — there's nothing meaningful to show in this offline demo.</p>
-      </div>
-    );
   }
 
   const unresolved = logs.filter((l) => !l.resolved);

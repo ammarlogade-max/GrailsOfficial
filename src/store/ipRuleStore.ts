@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 export interface IPRule {
   id: string;
@@ -29,7 +29,6 @@ export const useIPRuleStore = create<IPRuleState>()((set) => ({
   loading: false,
 
   fetchAll: async () => {
-    if (!isSupabaseConfigured) return;
     set({ loading: true });
     const { data, error } = await supabase.from("ip_rules").select("*").order("created_at", { ascending: false });
     if (error) console.error("fetch ip_rules failed:", error.message);
@@ -37,7 +36,6 @@ export const useIPRuleStore = create<IPRuleState>()((set) => ({
   },
 
   addRule: async (rule) => {
-    if (!isSupabaseConfigured) return;
     const { data, error } = await supabase
       .from("ip_rules")
       .insert({ ip_address: rule.ipAddress, type: rule.type, reason: rule.reason, scope: rule.scope, active: rule.active })
@@ -48,7 +46,6 @@ export const useIPRuleStore = create<IPRuleState>()((set) => ({
   },
 
   deleteRule: async (id) => {
-    if (!isSupabaseConfigured) return;
     const { error } = await supabase.from("ip_rules").delete().eq("id", id);
     if (error) throw error;
     set((s) => ({ rules: s.rules.filter((r) => r.id !== id) }));

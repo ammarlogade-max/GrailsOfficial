@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 export interface ErrorLogEntry {
   id: string;
@@ -31,14 +31,12 @@ function mapLog(row: any): ErrorLogEntry {
   };
 }
 
-// Read-only in mock mode: this table is meaningless without a real deployment catching real errors.
 export const useErrorLogStore = create<ErrorLogState>()((set) => ({
   logs: [],
   loading: false,
-  loaded: !isSupabaseConfigured,
+  loaded: false,
 
   fetchAll: async () => {
-    if (!isSupabaseConfigured) return;
     set({ loading: true });
     const { data, error } = await supabase.from("error_logs").select("*").order("created_at", { ascending: false }).limit(100);
     if (error) console.error("fetch error_logs failed:", error.message);

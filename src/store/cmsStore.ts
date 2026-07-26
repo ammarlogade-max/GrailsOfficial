@@ -1,7 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { heroPhoto, darkBannerPhoto, categoryHeroPhoto } from "../lib/images";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { sanitizeText } from "../lib/sanitize";
 
 export interface StoreSettings {
@@ -138,7 +137,6 @@ interface CMSState {
   updateSection: (id: string, patch: Partial<HomepageSection>) => void;
   persistSection: (id: string) => Promise<void>;
   reorderSections: (sections: HomepageSection[]) => void;
-  resetDemo: () => void;
 }
 
 const defaultSettings: StoreSettings = {
@@ -324,214 +322,185 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const isUuid = (id: string) => UUID_RE.test(id);
 
 export const useCMSStore = create<CMSState>()(
-  persist(
-    (set, get) => ({
-      settings: defaultSettings,
-      hero: defaultHero,
-      banners: defaultBanners,
-      sections: defaultSections,
-      announcement: defaultAnnouncement,
-      footerGroups: defaultFooterGroups,
-      loading: false,
-      loaded: !isSupabaseConfigured,
+  (set, get) => ({
+    settings: defaultSettings,
+    hero: defaultHero,
+    banners: defaultBanners,
+    sections: defaultSections,
+    announcement: defaultAnnouncement,
+    footerGroups: defaultFooterGroups,
+    loading: false,
+    loaded: false,
 
-      fetchAll: async () => {
-        if (!isSupabaseConfigured) return;
-        set({ loading: true });
-        const [
-          { data: settingsRow, error: sErr },
-          { data: heroRow, error: hErr },
-          { data: annRow, error: aErr },
-          { data: bannerRows, error: bErr },
-          { data: sectionRows, error: secErr },
-          { data: groupRows, error: gErr },
-        ] = await Promise.all([
-          supabase.from("store_settings").select("*").single(),
-          supabase.from("homepage_hero").select("*").single(),
-          supabase.from("announcement_bar").select("*").single(),
-          supabase.from("homepage_banners").select("*").order("sort_order"),
-          supabase.from("homepage_sections").select("*").order("sort_order"),
-          supabase.from("footer_link_groups").select("*, footer_links(*)").order("sort_order"),
-        ]);
-        if (sErr) console.error("fetch store_settings failed:", sErr.message);
-        if (hErr) console.error("fetch homepage_hero failed:", hErr.message);
-        if (aErr) console.error("fetch announcement_bar failed:", aErr.message);
-        if (bErr) console.error("fetch homepage_banners failed:", bErr.message);
-        if (secErr) console.error("fetch homepage_sections failed:", secErr.message);
-        if (gErr) console.error("fetch footer_link_groups failed:", gErr.message);
-        set({
-          settings: settingsRow ? mapSettings(settingsRow) : defaultSettings,
-          hero: heroRow ? mapHero(heroRow) : defaultHero,
-          announcement: annRow ? mapAnnouncement(annRow) : defaultAnnouncement,
-          banners: bannerRows ? bannerRows.map(mapBanner) : [],
-          sections: sectionRows ? sectionRows.map(mapSection) : [],
-          footerGroups: groupRows
-            ? groupRows.map((g) => ({
-                groupName: g.group_name,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                links: [...(g.footer_links || [])].sort((a: any, b: any) => a.sort_order - b.sort_order).map((l: any) => ({ label: l.label, url: l.url })),
-              }))
-            : defaultFooterGroups,
-          loading: false,
-          loaded: true,
-        });
-      },
+    fetchAll: async () => {
+      set({ loading: true });
+      const [
+        { data: settingsRow, error: sErr },
+        { data: heroRow, error: hErr },
+        { data: annRow, error: aErr },
+        { data: bannerRows, error: bErr },
+        { data: sectionRows, error: secErr },
+        { data: groupRows, error: gErr },
+      ] = await Promise.all([
+        supabase.from("store_settings").select("*").single(),
+        supabase.from("homepage_hero").select("*").single(),
+        supabase.from("announcement_bar").select("*").single(),
+        supabase.from("homepage_banners").select("*").order("sort_order"),
+        supabase.from("homepage_sections").select("*").order("sort_order"),
+        supabase.from("footer_link_groups").select("*, footer_links(*)").order("sort_order"),
+      ]);
+      if (sErr) console.error("fetch store_settings failed:", sErr.message);
+      if (hErr) console.error("fetch homepage_hero failed:", hErr.message);
+      if (aErr) console.error("fetch announcement_bar failed:", aErr.message);
+      if (bErr) console.error("fetch homepage_banners failed:", bErr.message);
+      if (secErr) console.error("fetch homepage_sections failed:", secErr.message);
+      if (gErr) console.error("fetch footer_link_groups failed:", gErr.message);
+      set({
+        settings: settingsRow ? mapSettings(settingsRow) : defaultSettings,
+        hero: heroRow ? mapHero(heroRow) : defaultHero,
+        announcement: annRow ? mapAnnouncement(annRow) : defaultAnnouncement,
+        banners: bannerRows ? bannerRows.map(mapBanner) : [],
+        sections: sectionRows ? sectionRows.map(mapSection) : [],
+        footerGroups: groupRows
+          ? groupRows.map((g) => ({
+              groupName: g.group_name,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              links: [...(g.footer_links || [])].sort((a: any, b: any) => a.sort_order - b.sort_order).map((l: any) => ({ label: l.label, url: l.url })),
+            }))
+          : defaultFooterGroups,
+        loading: false,
+        loaded: true,
+      });
+    },
 
-      updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
-      persistSettings: async () => {
-        if (!isSupabaseConfigured) return;
-        const clean = {
-          ...get().settings,
-          brandTagline: sanitizeText(get().settings.brandTagline),
-          businessAddress: sanitizeText(get().settings.businessAddress),
-          seoDefaultTitle: sanitizeText(get().settings.seoDefaultTitle),
-          seoDefaultDescription: sanitizeText(get().settings.seoDefaultDescription),
-          footerAboutText: sanitizeText(get().settings.footerAboutText),
-          footerCopyrightText: sanitizeText(get().settings.footerCopyrightText),
-        };
-        set({ settings: clean });
-        const s = clean;
-        const { error } = await supabase
-          .from("store_settings")
-          .update({
-            brand_name: s.brandName, brand_tagline: s.brandTagline,
-            logo_url: s.logoUrl, logo_dark_url: s.logoDarkUrl, favicon_url: s.faviconUrl,
-            primary_color: s.primaryColor, secondary_color: s.secondaryColor, button_color: s.buttonColor,
-            accent_color: s.accentColor, background_color: s.backgroundColor, text_color: s.textColor, button_text_color: s.buttonTextColor,
-            font_heading: s.fontHeading, font_body: s.fontBody,
-            whatsapp_number: s.whatsappNumber,
-            support_email: s.supportEmail, support_phone: s.supportPhone, business_address: s.businessAddress,
-            instagram_url: s.instagramUrl, facebook_url: s.facebookUrl, youtube_url: s.youtubeUrl,
-            twitter_url: s.twitterUrl, tiktok_url: s.tiktokUrl,
-            currency_symbol: s.currencySymbol, currency_code: s.currencyCode, upi_id: s.upiId,
-            free_shipping_threshold: s.freeShippingThreshold,
-            standard_shipping_charge: s.standardShippingCharge, express_shipping_charge: s.expressShippingCharge,
-            cod_charge: s.codCharge, cod_available: s.codAvailable,
-            google_analytics_id: s.googleAnalyticsId, meta_pixel_id: s.metaPixelId, microsoft_clarity_id: s.microsoftClarityId,
-            google_tag_manager_id: s.googleTagManagerId, google_search_console_code: s.googleSearchConsoleCode,
-            seo_default_title: s.seoDefaultTitle, seo_default_description: s.seoDefaultDescription,
-            seo_default_keywords: s.seoDefaultKeywords, seo_title_template: s.seoTitleTemplate, og_default_image: s.ogDefaultImage,
-            footer_about_text: s.footerAboutText, footer_copyright_text: s.footerCopyrightText,
-            reviews_enabled: s.reviewsEnabled, wishlist_enabled: s.wishlistEnabled,
-            guest_checkout_enabled: s.guestCheckoutEnabled, coupons_enabled: s.couponsEnabled,
-            require_2fa_for_admin: s.require2faForAdmin, uptime_monitor_url: s.uptimeMonitorUrl, newsletter_enabled: s.newsletterEnabled,
-          })
-          .eq("id", true);
+    updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
+    persistSettings: async () => {
+      const clean = {
+        ...get().settings,
+        brandTagline: sanitizeText(get().settings.brandTagline),
+        businessAddress: sanitizeText(get().settings.businessAddress),
+        seoDefaultTitle: sanitizeText(get().settings.seoDefaultTitle),
+        seoDefaultDescription: sanitizeText(get().settings.seoDefaultDescription),
+        footerAboutText: sanitizeText(get().settings.footerAboutText),
+        footerCopyrightText: sanitizeText(get().settings.footerCopyrightText),
+      };
+      set({ settings: clean });
+      const s = clean;
+      const { error } = await supabase
+        .from("store_settings")
+        .update({
+          brand_name: s.brandName, brand_tagline: s.brandTagline,
+          logo_url: s.logoUrl, logo_dark_url: s.logoDarkUrl, favicon_url: s.faviconUrl,
+          primary_color: s.primaryColor, secondary_color: s.secondaryColor, button_color: s.buttonColor,
+          accent_color: s.accentColor, background_color: s.backgroundColor, text_color: s.textColor, button_text_color: s.buttonTextColor,
+          font_heading: s.fontHeading, font_body: s.fontBody,
+          whatsapp_number: s.whatsappNumber,
+          support_email: s.supportEmail, support_phone: s.supportPhone, business_address: s.businessAddress,
+          instagram_url: s.instagramUrl, facebook_url: s.facebookUrl, youtube_url: s.youtubeUrl,
+          twitter_url: s.twitterUrl, tiktok_url: s.tiktokUrl,
+          currency_symbol: s.currencySymbol, currency_code: s.currencyCode, upi_id: s.upiId,
+          free_shipping_threshold: s.freeShippingThreshold,
+          standard_shipping_charge: s.standardShippingCharge, express_shipping_charge: s.expressShippingCharge,
+          cod_charge: s.codCharge, cod_available: s.codAvailable,
+          google_analytics_id: s.googleAnalyticsId, meta_pixel_id: s.metaPixelId, microsoft_clarity_id: s.microsoftClarityId,
+          google_tag_manager_id: s.googleTagManagerId, google_search_console_code: s.googleSearchConsoleCode,
+          seo_default_title: s.seoDefaultTitle, seo_default_description: s.seoDefaultDescription,
+          seo_default_keywords: s.seoDefaultKeywords, seo_title_template: s.seoTitleTemplate, og_default_image: s.ogDefaultImage,
+          footer_about_text: s.footerAboutText, footer_copyright_text: s.footerCopyrightText,
+          reviews_enabled: s.reviewsEnabled, wishlist_enabled: s.wishlistEnabled,
+          guest_checkout_enabled: s.guestCheckoutEnabled, coupons_enabled: s.couponsEnabled,
+          require_2fa_for_admin: s.require2faForAdmin, uptime_monitor_url: s.uptimeMonitorUrl, newsletter_enabled: s.newsletterEnabled,
+        })
+        .eq("id", true);
+      if (error) throw error;
+    },
+
+    updateHero: (patch) => set((s) => ({ hero: { ...s.hero, ...patch } })),
+    persistHero: async () => {
+      const clean = {
+        ...get().hero,
+        heading: sanitizeText(get().hero.heading),
+        subheading: sanitizeText(get().hero.subheading),
+        offerBadgeText: sanitizeText(get().hero.offerBadgeText),
+        ctaPrimaryText: sanitizeText(get().hero.ctaPrimaryText),
+        ctaSecondaryText: sanitizeText(get().hero.ctaSecondaryText),
+      };
+      set({ hero: clean });
+      const h = clean;
+      const { error } = await supabase
+        .from("homepage_hero")
+        .update({
+          heading: h.heading, subheading: h.subheading, offer_badge_text: h.offerBadgeText,
+          cta_primary_text: h.ctaPrimaryText, cta_primary_link: h.ctaPrimaryLink,
+          cta_secondary_text: h.ctaSecondaryText, cta_secondary_link: h.ctaSecondaryLink,
+          bg_type: h.bgType, photo_url: h.photo, video_url: h.videoUrl, poster_image: h.posterImage,
+          overlay_opacity: h.overlayOpacity, text_alignment: h.textAlignment,
+        })
+        .eq("id", true);
+      if (error) throw error;
+    },
+
+    updateAnnouncement: (patch) => set((s) => ({ announcement: { ...s.announcement, ...patch } })),
+    persistAnnouncement: async () => {
+      const clean = { ...get().announcement, text: sanitizeText(get().announcement.text) };
+      set({ announcement: clean });
+      const a = clean;
+      const { error } = await supabase
+        .from("announcement_bar")
+        .update({ text: a.text, bg_color: a.bgColor, text_color: a.textColor, scroll_speed: a.scrollSpeed, active: a.active })
+        .eq("id", true);
+      if (error) throw error;
+    },
+
+    updateBanner: (id, patch) => set((s) => ({ banners: s.banners.map((b) => (b.id === id ? { ...b, ...patch } : b)) })),
+    persistBanner: async (id) => {
+      const raw = get().banners.find((x) => x.id === id);
+      if (!raw) return;
+      const b = { ...raw, title: sanitizeText(raw.title), subtitle: sanitizeText(raw.subtitle), buttonText: sanitizeText(raw.buttonText), badgeText: sanitizeText(raw.badgeText) };
+      set((s) => ({ banners: s.banners.map((x) => (x.id === id ? b : x)) }));
+      const { error } = await supabase
+        .from("homepage_banners")
+        .update({
+          title: b.title, subtitle: b.subtitle, button_text: b.buttonText, button_link: b.buttonLink,
+          badge_text: b.badgeText, badge_color: b.badgeColor, photo_url: b.photo, active: b.active, sort_order: b.sortOrder,
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    addBanner: async (rawBanner) => {
+      const banner = { ...rawBanner, title: sanitizeText(rawBanner.title), subtitle: sanitizeText(rawBanner.subtitle) };
+      const { data, error } = await supabase
+        .from("homepage_banners")
+        .insert({
+          title: banner.title, subtitle: banner.subtitle, button_text: banner.buttonText, button_link: banner.buttonLink,
+          badge_text: banner.badgeText, badge_color: banner.badgeColor, photo_url: banner.photo, active: banner.active, sort_order: banner.sortOrder,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      set((s) => ({ banners: [...s.banners, mapBanner(data)] }));
+    },
+    removeBanner: async (id) => {
+      if (isUuid(id)) {
+        const { error } = await supabase.from("homepage_banners").delete().eq("id", id);
         if (error) throw error;
-      },
+      }
+      set((s) => ({ banners: s.banners.filter((b) => b.id !== id) }));
+    },
+    reorderBanners: (banners) => set({ banners }),
 
-      updateHero: (patch) => set((s) => ({ hero: { ...s.hero, ...patch } })),
-      persistHero: async () => {
-        if (!isSupabaseConfigured) return;
-        const clean = {
-          ...get().hero,
-          heading: sanitizeText(get().hero.heading),
-          subheading: sanitizeText(get().hero.subheading),
-          offerBadgeText: sanitizeText(get().hero.offerBadgeText),
-          ctaPrimaryText: sanitizeText(get().hero.ctaPrimaryText),
-          ctaSecondaryText: sanitizeText(get().hero.ctaSecondaryText),
-        };
-        set({ hero: clean });
-        const h = clean;
-        const { error } = await supabase
-          .from("homepage_hero")
-          .update({
-            heading: h.heading, subheading: h.subheading, offer_badge_text: h.offerBadgeText,
-            cta_primary_text: h.ctaPrimaryText, cta_primary_link: h.ctaPrimaryLink,
-            cta_secondary_text: h.ctaSecondaryText, cta_secondary_link: h.ctaSecondaryLink,
-            bg_type: h.bgType, photo_url: h.photo, video_url: h.videoUrl, poster_image: h.posterImage,
-            overlay_opacity: h.overlayOpacity, text_alignment: h.textAlignment,
-          })
-          .eq("id", true);
-        if (error) throw error;
-      },
-
-      updateAnnouncement: (patch) => set((s) => ({ announcement: { ...s.announcement, ...patch } })),
-      persistAnnouncement: async () => {
-        if (!isSupabaseConfigured) return;
-        const clean = { ...get().announcement, text: sanitizeText(get().announcement.text) };
-        set({ announcement: clean });
-        const a = clean;
-        const { error } = await supabase
-          .from("announcement_bar")
-          .update({ text: a.text, bg_color: a.bgColor, text_color: a.textColor, scroll_speed: a.scrollSpeed, active: a.active })
-          .eq("id", true);
-        if (error) throw error;
-      },
-
-      updateBanner: (id, patch) => set((s) => ({ banners: s.banners.map((b) => (b.id === id ? { ...b, ...patch } : b)) })),
-      persistBanner: async (id) => {
-        if (!isSupabaseConfigured) return;
-        const raw = get().banners.find((x) => x.id === id);
-        if (!raw) return;
-        const b = { ...raw, title: sanitizeText(raw.title), subtitle: sanitizeText(raw.subtitle), buttonText: sanitizeText(raw.buttonText), badgeText: sanitizeText(raw.badgeText) };
-        set((s) => ({ banners: s.banners.map((x) => (x.id === id ? b : x)) }));
-        const { error } = await supabase
-          .from("homepage_banners")
-          .update({
-            title: b.title, subtitle: b.subtitle, button_text: b.buttonText, button_link: b.buttonLink,
-            badge_text: b.badgeText, badge_color: b.badgeColor, photo_url: b.photo, active: b.active, sort_order: b.sortOrder,
-          })
-          .eq("id", id);
-        if (error) throw error;
-      },
-      addBanner: async (rawBanner) => {
-        const banner = { ...rawBanner, title: sanitizeText(rawBanner.title), subtitle: sanitizeText(rawBanner.subtitle) };
-        if (isSupabaseConfigured) {
-          const { data, error } = await supabase
-            .from("homepage_banners")
-            .insert({
-              title: banner.title, subtitle: banner.subtitle, button_text: banner.buttonText, button_link: banner.buttonLink,
-              badge_text: banner.badgeText, badge_color: banner.badgeColor, photo_url: banner.photo, active: banner.active, sort_order: banner.sortOrder,
-            })
-            .select()
-            .single();
-          if (error) throw error;
-          set((s) => ({ banners: [...s.banners, mapBanner(data)] }));
-          return;
-        }
-        set((s) => ({ banners: [...s.banners, banner] }));
-      },
-      removeBanner: async (id) => {
-        if (isSupabaseConfigured && isUuid(id)) {
-          const { error } = await supabase.from("homepage_banners").delete().eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ banners: s.banners.filter((b) => b.id !== id) }));
-      },
-      reorderBanners: (banners) => set({ banners }),
-
-      updateSection: (id, patch) => set((s) => ({ sections: s.sections.map((sec) => (sec.id === id ? { ...sec, ...patch } : sec)) })),
-      persistSection: async (id) => {
-        if (!isSupabaseConfigured) return;
-        const raw = get().sections.find((x) => x.id === id);
-        if (!raw) return;
-        const sec = { ...raw, title: sanitizeText(raw.title), subtitle: sanitizeText(raw.subtitle) };
-        set((s) => ({ sections: s.sections.map((x) => (x.id === id ? sec : x)) }));
-        const { error } = await supabase
-          .from("homepage_sections")
-          .update({ title: sec.title, subtitle: sec.subtitle, active: sec.active, sort_order: sec.sortOrder, product_limit: sec.productLimit })
-          .eq("id", id);
-        if (error) throw error;
-      },
-      reorderSections: (sections) => set({ sections }),
-
-      resetDemo: () =>
-        set({
-          settings: defaultSettings,
-          hero: defaultHero,
-          banners: defaultBanners,
-          sections: defaultSections,
-          announcement: defaultAnnouncement,
-          footerGroups: defaultFooterGroups,
-        }),
-    }),
-    {
-      name: "urbankicks-cms",
-      partialize: (state) =>
-        isSupabaseConfigured
-          ? {}
-          : { settings: state.settings, hero: state.hero, banners: state.banners, sections: state.sections, announcement: state.announcement, footerGroups: state.footerGroups },
-    }
-  )
+    updateSection: (id, patch) => set((s) => ({ sections: s.sections.map((sec) => (sec.id === id ? { ...sec, ...patch } : sec)) })),
+    persistSection: async (id) => {
+      const raw = get().sections.find((x) => x.id === id);
+      if (!raw) return;
+      const sec = { ...raw, title: sanitizeText(raw.title), subtitle: sanitizeText(raw.subtitle) };
+      set((s) => ({ sections: s.sections.map((x) => (x.id === id ? sec : x)) }));
+      const { error } = await supabase
+        .from("homepage_sections")
+        .update({ title: sec.title, subtitle: sec.subtitle, active: sec.active, sort_order: sec.sortOrder, product_limit: sec.productLimit })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    reorderSections: (sections) => set({ sections }),
+  })
 );

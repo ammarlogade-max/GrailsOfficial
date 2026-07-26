@@ -1,8 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { StaffMember, RolePermission } from "../data/types";
-import { staffMembers as seedStaff, roles as seedRoles } from "../data/admin-extras";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 interface StaffState {
   staff: StaffMember[];
@@ -24,36 +22,30 @@ function mapRole(row: any): RolePermission {
 }
 
 export const useStaffStore = create<StaffState>()(
-  persist(
-    (set, get) => ({
-      staff: isSupabaseConfigured ? [] : seedStaff,
-      roles: isSupabaseConfigured ? [] : seedRoles,
-      loading: false,
-      loaded: !isSupabaseConfigured,
+  (set, get) => ({
+    staff: [],
+    roles: [],
+    loading: false,
+    loaded: false,
 
-      fetchAll: async () => {
-        if (!isSupabaseConfigured) return;
-        set({ loading: true });
-        const [{ data: staff, error: sErr }, { data: roles, error: rErr }] = await Promise.all([
-          supabase.from("staff_members").select("*").order("created_at"),
-          supabase.from("roles").select("*"),
-        ]);
-        if (sErr) console.error("fetch staff_members failed:", sErr.message);
-        if (rErr) console.error("fetch roles failed:", rErr.message);
-        set({ staff: (staff || []).map(mapStaff), roles: (roles || []).map(mapRole), loading: false, loaded: true });
-      },
+    fetchAll: async () => {
+      set({ loading: true });
+      const [{ data: staff, error: sErr }, { data: roles, error: rErr }] = await Promise.all([
+        supabase.from("staff_members").select("*").order("created_at"),
+        supabase.from("roles").select("*"),
+      ]);
+      if (sErr) console.error("fetch staff_members failed:", sErr.message);
+      if (rErr) console.error("fetch roles failed:", rErr.message);
+      set({ staff: (staff || []).map(mapStaff), roles: (roles || []).map(mapRole), loading: false, loaded: true });
+    },
 
-      toggleStaffActive: async (id) => {
-        const current = get().staff.find((s) => s.id === id);
-        if (!current) return;
-        const nextActive = !current.active;
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("staff_members").update({ active: nextActive }).eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ staff: s.staff.map((m) => (m.id === id ? { ...m, active: nextActive } : m)) }));
-      },
-    }),
-    { name: "urbankicks-staff", partialize: (state) => (isSupabaseConfigured ? {} : { staff: state.staff, roles: state.roles }) }
-  )
+    toggleStaffActive: async (id) => {
+      const current = get().staff.find((s) => s.id === id);
+      if (!current) return;
+      const nextActive = !current.active;
+      const { error } = await supabase.from("staff_members").update({ active: nextActive }).eq("id", id);
+      if (error) throw error;
+      set((s) => ({ staff: s.staff.map((m) => (m.id === id ? { ...m, active: nextActive } : m)) }));
+    },
+  })
 );

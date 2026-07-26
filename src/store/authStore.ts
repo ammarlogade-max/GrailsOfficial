@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
-import { customers } from "../data/customers";
+import { supabase } from "../lib/supabase";
 import { enforceRateLimit } from "../lib/rateLimit";
 import { sanitizeText } from "../lib/sanitize";
 import { needsMfaChallenge, verifyLoginChallenge } from "../lib/mfa";
@@ -17,7 +16,7 @@ interface AuthState {
   user: AuthUser | null;
   loading: boolean;
   error: string | null;
-  /** Call once at app startup (see src/lib/useAuthInit.ts) to restore/subscribe to the real Supabase session. No-ops in mock mode. */
+  /** Call once at app startup (see src/lib/useAuthInit.ts) to restore/subscribe to the real Supabase session. */
   init: () => Promise<void>;
   login: (email: string, password?: string) => Promise<void>;
   register: (fullName: string, email: string, phone: string, password?: string) => Promise<void>;
@@ -32,7 +31,6 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       init: async () => {
-        if (!isSupabaseConfigured) return; // mock mode: persisted user is restored by `persist` middleware already
         const { data } = await supabase.auth.getSession();
         if (data.session?.user) await hydrateFromSession(data.session.user.id, data.session.user.email || "", set);
 
@@ -46,17 +44,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       login: async (email, password) => {
-        if (!isSupabaseConfigured) {
-          // Mock mode: log in as a matching demo customer (any password accepted)
-          const existing = customers.find((c) => c.email.toLowerCase() === email.toLowerCase());
-          set({
-            user: existing
-              ? { id: existing.id, fullName: existing.fullName, email: existing.email, phone: existing.phone }
-              : { id: "cust-demo", fullName: "Demo Customer", email, phone: "9876543210" },
-            error: null,
-          });
-          return;
-        }
         set({ loading: true, error: null });
         try {
           await enforceRateLimit(`login:${email.toLowerCase()}`, 8, 300);
@@ -75,10 +62,6 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (fullName, email, phone, password) => {
         const cleanName = sanitizeText(fullName);
-        if (!isSupabaseConfigured) {
-          set({ user: { id: "cust-new", fullName: cleanName, email, phone }, error: null });
-          return;
-        }
         set({ loading: true, error: null });
         try {
           await enforceRateLimit(`register:${email.toLowerCase()}`, 5, 600);
@@ -104,11 +87,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
-        if (isSupabaseConfigured) await supabase.auth.signOut();
+        await supabase.auth.signOut();
         set({ user: null });
       },
     }),
-    { name: "urbankicks-auth", partialize: (state) => (isSupabaseConfigured ? {} : { user: state.user }) }
+    { name: "urbankicks-auth", partialize: () => ({}) }
   )
 );
 
@@ -145,7 +128,6 @@ export const useAdminAuthStore = create<AdminAuthState>()(
       mfaPending: null,
 
       init: async () => {
-        if (!isSupabaseConfigured) return;
         set({ loading: true });
         const { data } = await supabase.auth.getSession();
         if (data.session?.user) {
@@ -157,11 +139,6 @@ export const useAdminAuthStore = create<AdminAuthState>()(
       },
 
       login: async (email, password) => {
-        if (!isSupabaseConfigured) {
-          // Mock mode: any credentials sign in as a demo super admin
-          set({ isAdmin: true, adminUser: { name: "Admin User", email: email || "admin@urbankicks.in", roleId: "super_admin" }, error: null });
-          return;
-        }
         set({ loading: true, error: null });
         try {
           await enforceRateLimit(`admin-login:${email.toLowerCase()}`, 5, 300);
@@ -177,10 +154,6 @@ export const useAdminAuthStore = create<AdminAuthState>()(
         if (data.user) {
           const mfaCheck = await needsMfaChallenge();
           if (mfaCheck.required && mfaCheck.factorId) {
-            // Password was correct, but this account has 2FA enrolled —
-            // pause here rather than granting admin access. hydrateStaff
-            // (and the login-alert it fires) only runs after verifyMfa
-            // succeeds below.
             set({ loading: false, mfaPending: { factorId: mfaCheck.factorId } });
             return;
           }
@@ -207,11 +180,11 @@ export const useAdminAuthStore = create<AdminAuthState>()(
       },
 
       logout: async () => {
-        if (isSupabaseConfigured) await supabase.auth.signOut();
+        await supabase.auth.signOut();
         set({ isAdmin: false, adminUser: null, mfaPending: null });
       },
     }),
-    { name: "urbankicks-admin-auth", partialize: (state) => (isSupabaseConfigured ? {} : { isAdmin: state.isAdmin, adminUser: state.adminUser }) }
+    { name: "urbankicks-admin-auth", partialize: () => ({}) }
   )
 );
 
@@ -224,8 +197,6 @@ async function hydrateStaff(userId: string, set: (partial: Partial<AdminAuthStat
   }
   set({ isAdmin: true, adminUser: { name: staff.name, email: staff.email, roleId: staff.role_id }, error: null });
   if (logLogin) {
-    // Fire-and-forget: records this login in the audit trail and alerts other
-    // staff (except the super admin logging in, to avoid self-notifying).
     supabase.rpc("log_admin_login", { p_email: staff.email, p_role: staff.role_id }).then(({ error: logErr }) => {
       if (logErr) console.error("log_admin_login failed:", logErr.message);
     });

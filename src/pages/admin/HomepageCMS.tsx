@@ -16,7 +16,7 @@ export default function HomepageCMS() {
     settings, hero, announcement, banners, sections,
     fetchAll, updateSettings, persistSettings, updateHero, persistHero,
     updateAnnouncement, persistAnnouncement, updateBanner, persistBanner, addBanner, removeBanner,
-    updateSection, persistSection, resetDemo,
+    updateSection, persistSection,
   } = useCMSStore();
   const showToast = useToastStore((s) => s.show);
   const uploadMediaFile = useMediaStore((s) => s.uploadFile);
@@ -81,10 +81,7 @@ export default function HomepageCMS() {
         <p className="text-sm text-neutral-500 max-w-lg">
           Changes here update the live storefront instantly — no deploy needed. This is exactly how the real CMS will work.
         </p>
-        <div className="flex gap-2">
-          <button onClick={() => { resetDemo(); showToast("Homepage reset to defaults", "info"); }} className="btn btn-outline btn-sm">Reset Demo Data</button>
-          <Link to="/" target="_blank" className="btn btn-dark btn-sm">View Live Homepage <ExternalLink size={13} /></Link>
-        </div>
+        <Link to="/" target="_blank" className="btn btn-dark btn-sm">View Live Homepage <ExternalLink size={13} /></Link>
       </div>
 
       <div className="flex gap-1 border-b border-neutral-200 mb-6 overflow-x-auto">
@@ -373,7 +370,6 @@ export default function HomepageCMS() {
               <Toggle on={sec.active} onChange={(v) => { updateSection(sec.id, { active: v }); notifySaved(() => persistSection(sec.id)); }} />
             </div>
           ))}
-          <p className="text-xs text-neutral-400">Drag handles are for illustration in this demo — reordering will be fully functional in production.</p>
         </div>
       )}
     </div>

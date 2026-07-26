@@ -6,10 +6,9 @@ import Toggle from "../../components/ui/Toggle";
 import MediaPickerModal from "../../components/admin/MediaPickerModal";
 import ProductImage from "../../components/customer/ProductImage";
 import { Trash2 } from "lucide-react";
-import { isSupabaseConfigured } from "../../lib/supabase";
 
 export default function SettingsAdmin() {
-  const { settings, updateSettings, persistSettings, resetDemo } = useCMSStore();
+  const { settings, updateSettings, persistSettings } = useCMSStore();
   const { rules, fetchAll: fetchIPRules, addRule, deleteRule } = useIPRuleStore();
   const showToast = useToastStore((s) => s.show);
   const [pickerField, setPickerField] = useState<"logoUrl" | "logoDarkUrl" | "faviconUrl" | "ogDefaultImage" | null>(null);
@@ -157,11 +156,7 @@ export default function SettingsAdmin() {
 
         <div className="pt-3 border-t border-neutral-100">
           <h4 className="text-sm font-medium mb-1">IP Allow / Block List</h4>
-          <p className="text-xs text-neutral-400 mb-3">
-            Enforced in the payment Edge Functions. {!isSupabaseConfigured && "Needs a real Supabase connection — nothing to manage in this offline demo."}
-          </p>
-          {isSupabaseConfigured && (
-            <>
+          <p className="text-xs text-neutral-400 mb-3">Enforced in the payment Edge Functions.</p>
               <div className="flex flex-wrap gap-2 mb-3">
                 <input
                   value={newRule.ipAddress}
@@ -194,8 +189,6 @@ export default function SettingsAdmin() {
                 ))}
                 {rules.length === 0 && <p className="text-xs text-neutral-400">No IP rules — everyone can reach the store.</p>}
               </div>
-            </>
-          )}
         </div>
       </div>
 
@@ -228,13 +221,6 @@ export default function SettingsAdmin() {
         </div>
       </div>
 
-      <div className="card p-5">
-        <h3 className="font-semibold text-sm mb-2">Danger Zone</h3>
-        <p className="text-xs text-neutral-500 mb-3">Reset all homepage and settings customizations back to the original demo defaults.</p>
-        <button onClick={() => { resetDemo(); showToast("All settings reset to defaults", "info"); }} className="btn btn-outline btn-sm text-rose-600 border-rose-200 hover:border-rose-400">
-          Reset to Defaults
-        </button>
-      </div>
 
       <MediaPickerModal
         open={pickerField !== null}

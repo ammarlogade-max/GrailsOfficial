@@ -1,8 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { MediaAsset } from "../data/types";
-import { mediaAssets as seed } from "../data/admin-extras";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { compressImage } from "../lib/imageCompression";
 
 interface MediaState {
@@ -11,7 +9,7 @@ interface MediaState {
   uploading: boolean;
   loaded: boolean;
   fetchAll: () => Promise<void>;
-  /** Uploads a real file to Supabase Storage (media bucket) and records it in media_assets. Mock mode fakes it. */
+  /** Uploads a real file to Supabase Storage (media bucket) and records it in media_assets. */
   uploadFile: (file: File, folder: MediaAsset["folder"]) => Promise<MediaAsset>;
   deleteAsset: (id: string) => Promise<void>;
 }
@@ -48,87 +46,66 @@ function safeStorageFileName(name: string, type: string) {
 }
 
 export const useMediaStore = create<MediaState>()(
-  persist(
-    (set) => ({
-      assets: isSupabaseConfigured ? [] : seed,
-      loading: false,
-      uploading: false,
-      loaded: !isSupabaseConfigured,
+  (set) => ({
+    assets: [],
+    loading: false,
+    uploading: false,
+    loaded: false,
 
-      fetchAll: async () => {
-        if (!isSupabaseConfigured) return;
-        set({ loading: true });
-        const { data, error } = await supabase.from("media_assets").select("*").order("uploaded_at", { ascending: false });
-        if (error) console.error("fetch media_assets failed:", error.message);
-        set({ assets: (data || []).map(mapAsset), loading: false, loaded: true });
-      },
+    fetchAll: async () => {
+      set({ loading: true });
+      const { data, error } = await supabase.from("media_assets").select("*").order("uploaded_at", { ascending: false });
+      if (error) console.error("fetch media_assets failed:", error.message);
+      set({ assets: (data || []).map(mapAsset), loading: false, loaded: true });
+    },
 
-      uploadFile: async (rawFile, folder) => {
-        if (isSupabaseConfigured) {
-          set({ uploading: true });
-          try {
-            const { data: userData, error: userError } = await supabase.auth.getUser();
-            if (userError || !userData.user) {
-              throw new Error("Please sign in to the admin panel again before uploading media.");
-            }
-            const { data: staff, error: staffError } = await supabase
-              .from("staff_members")
-              .select("id, active")
-              .eq("id", userData.user.id)
-              .single();
-            if (staffError || !staff?.active) {
-              throw new Error("This Supabase account is not an active staff member, so media uploads are blocked by RLS.");
-            }
-
-            const file = await compressImage(rawFile);
-            const storageFileName = safeStorageFileName(file.name, file.type);
-            const path = `${folder}/${Date.now()}-${storageFileName}`;
-            const { error: uploadError } = await supabase.storage.from("media").upload(path, file, { cacheControl: "3600", upsert: false });
-            if (uploadError) throw uploadError;
-            const { data: publicUrlData } = supabase.storage.from("media").getPublicUrl(path);
-            const { data, error } = await supabase
-              .from("media_assets")
-              .insert({
-                file_name: file.name,
-                folder,
-                file_type: file.type.startsWith("video") ? "video" : "image",
-                alt_text: file.name,
-                storage_path: publicUrlData.publicUrl,
-                file_size: file.size,
-              })
-              .select()
-              .single();
-            if (error) throw error;
-            const asset = mapAsset(data);
-            set((s) => ({ assets: [asset, ...s.assets] }));
-            return asset;
-          } finally {
-            set({ uploading: false });
-          }
+    uploadFile: async (rawFile, folder) => {
+      set({ uploading: true });
+      try {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData.user) {
+          throw new Error("Please sign in to the admin panel again before uploading media.");
         }
-        // Mock mode: fake an upload using a local object URL so it previews immediately.
-        const asset: MediaAsset = {
-          id: `media-new-${Date.now()}`,
-          fileName: rawFile.name,
-          folder,
-          fileType: rawFile.type.startsWith("video") ? "video" : "image",
-          altText: rawFile.name,
-          photo: URL.createObjectURL(rawFile),
-          uploadedAt: new Date().toISOString(),
-          fileSize: rawFile.size,
-        };
+        const { data: staff, error: staffError } = await supabase
+          .from("staff_members")
+          .select("id, active")
+          .eq("id", userData.user.id)
+          .single();
+        if (staffError || !staff?.active) {
+          throw new Error("This Supabase account is not an active staff member, so media uploads are blocked by RLS.");
+        }
+
+        const file = await compressImage(rawFile);
+        const storageFileName = safeStorageFileName(file.name, file.type);
+        const path = `${folder}/${Date.now()}-${storageFileName}`;
+        const { error: uploadError } = await supabase.storage.from("media").upload(path, file, { cacheControl: "3600", upsert: false });
+        if (uploadError) throw uploadError;
+        const { data: publicUrlData } = supabase.storage.from("media").getPublicUrl(path);
+        const { data, error } = await supabase
+          .from("media_assets")
+          .insert({
+            file_name: file.name,
+            folder,
+            file_type: file.type.startsWith("video") ? "video" : "image",
+            alt_text: file.name,
+            storage_path: publicUrlData.publicUrl,
+            file_size: file.size,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        const asset = mapAsset(data);
         set((s) => ({ assets: [asset, ...s.assets] }));
         return asset;
-      },
+      } finally {
+        set({ uploading: false });
+      }
+    },
 
-      deleteAsset: async (id) => {
-        if (isSupabaseConfigured) {
-          const { error } = await supabase.from("media_assets").delete().eq("id", id);
-          if (error) throw error;
-        }
-        set((s) => ({ assets: s.assets.filter((a) => a.id !== id) }));
-      },
-    }),
-    { name: "urbankicks-media", partialize: (state) => (isSupabaseConfigured ? {} : { assets: state.assets }) }
-  )
+    deleteAsset: async (id) => {
+      const { error } = await supabase.from("media_assets").delete().eq("id", id);
+      if (error) throw error;
+      set((s) => ({ assets: s.assets.filter((a) => a.id !== id) }));
+    },
+  })
 );

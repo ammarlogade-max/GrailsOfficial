@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CheckCircle2, Package, MessageCircle } from "lucide-react";
-import { useOrdersStore } from "../../store/ordersStore";
 import { useCMSStore } from "../../store/cmsStore";
 import { formatINR, formatDate } from "../../lib/format";
-import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { supabase } from "../../lib/supabase";
 import { useSEO } from "../../lib/useSEO";
 
 interface SimpleOrder {
@@ -24,12 +23,11 @@ export default function OrderSuccess() {
   useSEO({ title: "Order Confirmed", index: false });
 
   const { orderId } = useParams();
-  const mockOrder = useOrdersStore((s) => s.orders.find((o) => o.id === orderId));
   const settings = useCMSStore((s) => s.settings);
   const [realOrder, setRealOrder] = useState<SimpleOrder | null | undefined>(undefined);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !orderId) return;
+    if (!orderId) return;
     supabase
       .from("orders")
       .select("id, order_number, shipping_name, created_at, payment_method, shipping_line1, shipping_city, shipping_state, shipping_pincode, total")
@@ -55,13 +53,11 @@ export default function OrderSuccess() {
       });
   }, [orderId]);
 
-  const order: SimpleOrder | null | undefined = isSupabaseConfigured ? realOrder : mockOrder;
-
-  if (order === undefined) {
+  if (realOrder === undefined) {
     return <div className="max-w-lg mx-auto px-4 py-24 text-center text-neutral-400">Loading your order...</div>;
   }
 
-  if (!order) {
+  if (!realOrder) {
     return (
       <div className="max-w-lg mx-auto px-4 py-24 text-center">
         <p className="text-neutral-500">Order not found.</p>
@@ -75,29 +71,29 @@ export default function OrderSuccess() {
       <CheckCircle2 size={56} className="mx-auto text-green-500" />
       <h1 className="text-display text-3xl sm:text-4xl mt-4">Order Confirmed!</h1>
       <p className="text-neutral-500 mt-2">
-        Thank you {order.shippingName.split(" ")[0]}! Your order <span className="font-semibold text-neutral-800">{order.orderNumber}</span> has been placed.
+        Thank you {realOrder.shippingName.split(" ")[0]}! Your order <span className="font-semibold text-neutral-800">{realOrder.orderNumber}</span> has been placed.
       </p>
 
       <div className="card p-5 text-left mt-8">
         <div className="flex justify-between text-sm mb-3">
           <span className="text-neutral-500">Order Date</span>
-          <span>{formatDate(order.createdAt)}</span>
+          <span>{formatDate(realOrder.createdAt)}</span>
         </div>
         <div className="flex justify-between text-sm mb-3">
           <span className="text-neutral-500">Payment Method</span>
-          <span className="capitalize">{order.paymentMethod === "cod" ? "Cash on Delivery" : order.paymentMethod}</span>
+          <span className="capitalize">{realOrder.paymentMethod === "cod" ? "Cash on Delivery" : realOrder.paymentMethod}</span>
         </div>
         <div className="flex justify-between text-sm mb-3">
           <span className="text-neutral-500">Delivery Address</span>
-          <span className="text-right max-w-[60%]">{order.shippingLine1}, {order.shippingCity}, {order.shippingState} {order.shippingPincode}</span>
+          <span className="text-right max-w-[60%]">{realOrder.shippingLine1}, {realOrder.shippingCity}, {realOrder.shippingState} {realOrder.shippingPincode}</span>
         </div>
         <div className="border-t border-neutral-200 pt-3 flex justify-between font-semibold">
-          <span>Total Paid</span><span>{formatINR(order.total)}</span>
+          <span>Total Paid</span><span>{formatINR(realOrder.total)}</span>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mt-8 justify-center">
-        <Link to={`/account/orders/${order.id}`} className="btn btn-dark">
+        <Link to={`/account/orders/${realOrder.id}`} className="btn btn-dark">
           <Package size={16} /> Track Order & Download Invoice
         </Link>
         <a href={`https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="btn btn-outline">

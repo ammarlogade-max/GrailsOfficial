@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { useAuthStore } from "./authStore";
 
 interface WishlistState {
   productIds: string[];
   loaded: boolean;
-  /** Loads the signed-in user's real wishlist from Supabase. Call after login. No-ops in mock mode / when logged out. */
+  /** Loads the signed-in user's real wishlist from Supabase. Call after login. */
   fetchForUser: () => Promise<void>;
   toggle: (productId: string) => Promise<void>;
   isWishlisted: (productId: string) => boolean;
@@ -17,11 +17,11 @@ export const useWishlistStore = create<WishlistState>()(
   persist(
     (set, get) => ({
       productIds: [],
-      loaded: !isSupabaseConfigured,
+      loaded: false,
 
       fetchForUser: async () => {
         const userId = useAuthStore.getState().user?.id;
-        if (!isSupabaseConfigured || !userId) return;
+        if (!userId) return;
         const { data, error } = await supabase.from("wishlist_items").select("product_id").eq("user_id", userId);
         if (error) {
           console.error("fetchForUser wishlist failed:", error.message);
@@ -33,7 +33,7 @@ export const useWishlistStore = create<WishlistState>()(
       toggle: async (productId) => {
         const userId = useAuthStore.getState().user?.id;
         const isWishlisted = get().productIds.includes(productId);
-        if (isSupabaseConfigured && userId) {
+        if (userId) {
           if (isWishlisted) {
             const { error } = await supabase.from("wishlist_items").delete().eq("user_id", userId).eq("product_id", productId);
             if (error) throw error;
@@ -51,13 +51,13 @@ export const useWishlistStore = create<WishlistState>()(
 
       remove: async (productId) => {
         const userId = useAuthStore.getState().user?.id;
-        if (isSupabaseConfigured && userId) {
+        if (userId) {
           const { error } = await supabase.from("wishlist_items").delete().eq("user_id", userId).eq("product_id", productId);
           if (error) throw error;
         }
         set((s) => ({ productIds: s.productIds.filter((id) => id !== productId) }));
       },
     }),
-    { name: "urbankicks-wishlist", partialize: (state) => (isSupabaseConfigured ? {} : { productIds: state.productIds }) }
+    { name: "urbankicks-wishlist", partialize: () => ({}) }
   )
 );

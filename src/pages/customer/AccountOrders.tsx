@@ -5,18 +5,15 @@ import { useOrdersStore } from "../../store/ordersStore";
 import { useAuthStore } from "../../store/authStore";
 import { formatDate, formatINR, STATUS_LABELS, STATUS_COLORS } from "../../lib/format";
 import ProductImage from "../../components/customer/ProductImage";
-import { isSupabaseConfigured } from "../../lib/supabase";
 
 export default function AccountOrders() {
   const user = useAuthStore((s) => s.user);
-  const { orders: allOrders, loading, fetchOrders } = useOrdersStore();
+  const { orders, loading, fetchOrders } = useOrdersStore();
 
   useEffect(() => {
-    if (user?.id) fetchOrders(isSupabaseConfigured ? user.id : undefined);
+    if (user?.id) fetchOrders(user.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  const orders = isSupabaseConfigured ? allOrders : allOrders.filter((o) => o.customerId === user?.id);
 
   if (loading) {
     return (

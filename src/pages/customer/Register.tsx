@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useToastStore } from "../../store/toastStore";
-import { isSupabaseConfigured } from "../../lib/supabase";
 import { useSEO } from "../../lib/useSEO";
 
 export default function Register() {
@@ -19,11 +18,8 @@ export default function Register() {
     setSubmitting(true);
     try {
       await register(form.fullName, form.email, form.phone, form.password);
-      showToast(
-        isSupabaseConfigured ? "Account created! Check your email to confirm, then log in." : "Account created successfully!",
-        "success"
-      );
-      navigate(isSupabaseConfigured ? "/login" : "/account");
+      showToast("Account created! Check your email to confirm, then log in.", "success");
+      navigate("/login");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Registration failed", "error");
     } finally {

@@ -1,8 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { Order, OrderStatus } from "../data/types";
-import { orders as seedOrders } from "../data/orders";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import type { Database } from "../types/database";
 import { sanitizeText } from "../lib/sanitize";
 
@@ -17,7 +15,6 @@ interface OrdersState {
   updateStatus: (id: string, status: OrderStatus) => Promise<void>;
   bulkUpdateStatus: (ids: string[], status: OrderStatus) => Promise<void>;
   updateOrder: (id: string, patch: Partial<Order>) => Promise<void>;
-  resetDemo: () => void;
 }
 
 const ORDER_SELECT = "*, order_items(*), order_status_history(*)";
@@ -74,94 +71,81 @@ function mapDbOrder(row: any): Order {
 }
 
 export const useOrdersStore = create<OrdersState>()(
-  persist(
-    (set, get) => ({
-      orders: isSupabaseConfigured ? [] : seedOrders,
-      loading: false,
-      loaded: !isSupabaseConfigured,
+  (set) => ({
+    orders: [],
+    loading: false,
+    loaded: false,
 
-      fetchOrders: async (customerId) => {
-        if (!isSupabaseConfigured) return; // mock data already seeded
-        set({ loading: true });
-        let query = supabase.from("orders").select(ORDER_SELECT).order("created_at", { ascending: false });
-        if (customerId) query = query.eq("customer_id", customerId);
-        const { data, error } = await query;
-        if (error) {
-          console.error("fetchOrders failed:", error.message);
-          set({ loading: false, loaded: true });
-          return;
-        }
-        set({ orders: (data || []).map(mapDbOrder), loading: false, loaded: true });
-      },
+    fetchOrders: async (customerId) => {
+      set({ loading: true });
+      let query = supabase.from("orders").select(ORDER_SELECT).order("created_at", { ascending: false });
+      if (customerId) query = query.eq("customer_id", customerId);
+      const { data, error } = await query;
+      if (error) {
+        console.error("fetchOrders failed:", error.message);
+        set({ loading: false, loaded: true });
+        return;
+      }
+      set({ orders: (data || []).map(mapDbOrder), loading: false, loaded: true });
+    },
 
-      fetchOrderById: async (id) => {
-        if (!isSupabaseConfigured) return get().orders.find((o) => o.id === id) || null;
-        const { data, error } = await supabase.from("orders").select(ORDER_SELECT).eq("id", id).single();
-        if (error || !data) return null;
-        const order = mapDbOrder(data);
-        set((s) => ({ orders: s.orders.some((o) => o.id === id) ? s.orders.map((o) => (o.id === id ? order : o)) : [order, ...s.orders] }));
-        return order;
-      },
+    fetchOrderById: async (id) => {
+      const { data, error } = await supabase.from("orders").select(ORDER_SELECT).eq("id", id).single();
+      if (error || !data) return null;
+      const order = mapDbOrder(data);
+      set((s) => ({ orders: s.orders.some((o) => o.id === id) ? s.orders.map((o) => (o.id === id ? order : o)) : [order, ...s.orders] }));
+      return order;
+    },
 
-      addOrder: (order) => set((s) => ({ orders: [order, ...s.orders] })),
+    addOrder: (order) => set((s) => ({ orders: [order, ...s.orders] })),
 
-      updateStatus: async (id, status) => {
-        if (isSupabaseConfigured) {
+    updateStatus: async (id, status) => {
+      const { error } = await supabase.from("orders").update({ status }).eq("id", id);
+      if (error) throw error;
+      await supabase.from("order_status_history").insert({ order_id: id, status });
+      set((s) => ({
+        orders: s.orders.map((o) =>
+          o.id === id
+            ? { ...o, status, updatedAt: new Date().toISOString(), statusHistory: [...o.statusHistory, { status, at: new Date().toISOString() }] }
+            : o
+        ),
+      }));
+    },
+
+    bulkUpdateStatus: async (ids, status) => {
+      const at = new Date().toISOString();
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
           const { error } = await supabase.from("orders").update({ status }).eq("id", id);
           if (error) throw error;
           await supabase.from("order_status_history").insert({ order_id: id, status });
-        }
-        set((s) => ({
-          orders: s.orders.map((o) =>
-            o.id === id
-              ? { ...o, status, updatedAt: new Date().toISOString(), statusHistory: [...o.statusHistory, { status, at: new Date().toISOString() }] }
-              : o
-          ),
-        }));
-      },
+        })
+      );
+      const failed = results.filter((r) => r.status === "rejected");
+      if (failed.length > 0) throw new Error(`${failed.length} of ${ids.length} orders failed to update`);
+      set((s) => ({
+        orders: s.orders.map((o) =>
+          ids.includes(o.id) ? { ...o, status, updatedAt: at, statusHistory: [...o.statusHistory, { status, at }] } : o
+        ),
+      }));
+    },
 
-      bulkUpdateStatus: async (ids, status) => {
-        const at = new Date().toISOString();
-        if (isSupabaseConfigured) {
-          const results = await Promise.allSettled(
-            ids.map(async (id) => {
-              const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-              if (error) throw error;
-              await supabase.from("order_status_history").insert({ order_id: id, status });
-            })
-          );
-          const failed = results.filter((r) => r.status === "rejected");
-          if (failed.length > 0) throw new Error(`${failed.length} of ${ids.length} orders failed to update`);
-        }
-        set((s) => ({
-          orders: s.orders.map((o) =>
-            ids.includes(o.id) ? { ...o, status, updatedAt: at, statusHistory: [...o.statusHistory, { status, at }] } : o
-          ),
-        }));
-      },
-
-      updateOrder: async (id, rawPatch) => {
-        const patch = {
-          ...rawPatch,
-          adminNote: rawPatch.adminNote !== undefined ? sanitizeText(rawPatch.adminNote) : undefined,
-          courierName: rawPatch.courierName !== undefined ? sanitizeText(rawPatch.courierName) : undefined,
-          trackingNumber: rawPatch.trackingNumber !== undefined ? sanitizeText(rawPatch.trackingNumber) : undefined,
-        };
-        if (isSupabaseConfigured) {
-          const dbPatch: Database["public"]["Tables"]["orders"]["Update"] = {};
-          if (patch.adminNote !== undefined) dbPatch.admin_note = patch.adminNote;
-          if (patch.courierName !== undefined) dbPatch.courier_name = patch.courierName;
-          if (patch.trackingNumber !== undefined) dbPatch.tracking_number = patch.trackingNumber;
-          if (Object.keys(dbPatch).length > 0) {
-            const { error } = await supabase.from("orders").update(dbPatch).eq("id", id);
-            if (error) throw error;
-          }
-        }
-        set((s) => ({ orders: s.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)) }));
-      },
-
-      resetDemo: () => set({ orders: seedOrders }),
-    }),
-    { name: "urbankicks-orders", partialize: (state) => (isSupabaseConfigured ? {} : { orders: state.orders }) }
-  )
+    updateOrder: async (id, rawPatch) => {
+      const patch = {
+        ...rawPatch,
+        adminNote: rawPatch.adminNote !== undefined ? sanitizeText(rawPatch.adminNote) : undefined,
+        courierName: rawPatch.courierName !== undefined ? sanitizeText(rawPatch.courierName) : undefined,
+        trackingNumber: rawPatch.trackingNumber !== undefined ? sanitizeText(rawPatch.trackingNumber) : undefined,
+      };
+      const dbPatch: Database["public"]["Tables"]["orders"]["Update"] = {};
+      if (patch.adminNote !== undefined) dbPatch.admin_note = patch.adminNote;
+      if (patch.courierName !== undefined) dbPatch.courier_name = patch.courierName;
+      if (patch.trackingNumber !== undefined) dbPatch.tracking_number = patch.trackingNumber;
+      if (Object.keys(dbPatch).length > 0) {
+        const { error } = await supabase.from("orders").update(dbPatch).eq("id", id);
+        if (error) throw error;
+      }
+      set((s) => ({ orders: s.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)) }));
+    },
+  })
 );
