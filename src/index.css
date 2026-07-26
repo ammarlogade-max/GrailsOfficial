@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 /* ============================================================
-   UrbanKicks Design Tokens
-   These CSS custom properties are the "admin-driven theme" —
+  Grail's Official Design Tokens
+  These CSS custom properties are the "admin-driven theme" —
    in the real product they come from `store_settings`. In this
    demo, the CMS store writes directly to these variables so
    changes made in Admin -> Settings/Homepage are reflected live.
    ============================================================ */
 :root {
-  --color-primary: #f97316;      /* UrbanKicks Orange */
+  --color-primary: #f97316;      /* Grail's Official Orange */
   --color-primary-dark: #c2570a;
   --color-secondary: #0a0a0a;    /* Near-black */
   --color-accent: #f97316;

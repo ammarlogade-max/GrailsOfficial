@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks - 0011_fix_audit_trigger_non_uuid_ids.sql
+-- Grail's Official - 0011_fix_audit_trigger_non_uuid_ids.sql
 -- Audit triggers are shared by normal UUID tables and singleton CMS tables
 -- whose primary key is boolean (`id = true`). Do not cast/log non-UUID IDs
 -- into audit_logs.entity_id, otherwise updates to homepage_hero fail.

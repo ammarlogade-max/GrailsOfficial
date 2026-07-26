@@ -116,7 +116,7 @@ export const products: Product[] = seeds.map((s, i) => {
     newArrival: !!s.newArrival,
     stock: s.stock,
     lowStockThreshold: 10,
-    seoTitle: `Buy ${s.brand} ${s.name} Online | UrbanKicks`,
+    seoTitle: `Buy ${s.brand} ${s.name} Online | Grail's Official`,
     seoDescription: `Shop the ${s.brand} ${s.name} at ₹${s.price}. Premium quality, COD available, free shipping above ₹999, 7-day returns.`,
     seoKeywords: `${s.brand}, ${s.name}, sneakers, shoes online india`,
     sortOrder: i,

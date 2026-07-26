@@ -12,5 +12,5 @@ required). Credited here as good practice:
 - Karsten Winegeart — https://unsplash.com/@karsten116
 - Fujiphilm — https://unsplash.com/@fujiphilm
 
-For the production build, replace these with UrbanKicks' own product
+For the production build, replace these with Grail's Official product
 photography (see `src/lib/images.ts` for the single place these are wired in).

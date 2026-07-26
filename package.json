@@ -40,7 +40,7 @@
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   },
-  "description": "UrbanKicks — interactive client-presentation prototype (frontend-only, mock data)",
+  "description": "Grail's Official — interactive client-presentation prototype (frontend-only, mock data)",
   "main": "postcss.config.js",
   "directories": {
     "test": "tests"

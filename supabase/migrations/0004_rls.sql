@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0004_rls.sql
+-- Grail's Official — 0004_rls.sql
 -- Row Level Security: public storefront read access, owner-only customer
 -- data, and staff/permission-gated admin access.
 -- ============================================================================

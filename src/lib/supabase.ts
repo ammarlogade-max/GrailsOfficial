@@ -6,7 +6,7 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 function requireEnv(name: string, value: string | undefined) {
   if (!value || value.includes("your-project-ref") || value.includes("your-anon-public-key")) {
-    throw new Error(`${name} is required. Configure Supabase before running UrbanKicks.`);
+    throw new Error(`${name} is required. Configure Supabase before running Grail's Official.`);
   }
   return value;
 }

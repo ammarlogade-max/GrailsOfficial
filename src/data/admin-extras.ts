@@ -26,18 +26,18 @@ export const mediaAssets: MediaAsset[] = [
   })),
   { id: "media-hero-1", fileName: "hero-banner-main.jpg", folder: "hero", fileType: "image", altText: "Homepage hero banner", photo: heroPhoto(), uploadedAt: daysAgoIso(20), fileSize: 610000 },
   { id: "media-banner-1", fileName: "festival-sale-banner.jpg", folder: "banners", fileType: "image", altText: "Festival Sale banner", photo: darkBannerPhoto("sneakersBlackBg"), uploadedAt: daysAgoIso(6), fileSize: 480000 },
-  { id: "media-brand-1", fileName: "urbankicks-logo.jpg", folder: "brand", fileType: "image", altText: "UrbanKicks logo", photo: darkBannerPhoto("sneakerDarkProfile"), uploadedAt: daysAgoIso(90), fileSize: 34000 },
+  { id: "media-brand-1", fileName: "grails-official-logo.jpg", folder: "brand", fileType: "image", altText: "Grail's Official logo", photo: darkBannerPhoto("sneakerDarkProfile"), uploadedAt: daysAgoIso(90), fileSize: 34000 },
 ];
 
 export const auditLogs: AuditLogEntry[] = [
-  { id: "log-1", actorEmail: "admin@urbankicks.in", actorRole: "super_admin", action: "updated", entityType: "product", entityName: "Nike Air Zoom Pulse Runner", changedFields: ["price", "stock"], createdAt: hoursAgoIso(2) },
-  { id: "log-2", actorEmail: "marketing@urbankicks.in", actorRole: "marketing_manager", action: "created", entityType: "coupon", entityName: "MONSOON15", createdAt: hoursAgoIso(5) },
-  { id: "log-3", actorEmail: "admin@urbankicks.in", actorRole: "super_admin", action: "updated", entityType: "homepage_hero", entityName: "Hero Section", changedFields: ["heading", "bg_image_url"], createdAt: hoursAgoIso(9) },
-  { id: "log-4", actorEmail: "support@urbankicks.in", actorRole: "customer_support", action: "status_changed", entityType: "order", entityName: "UK-20261014", changedFields: ["status"], createdAt: hoursAgoIso(14) },
-  { id: "log-5", actorEmail: "admin@urbankicks.in", actorRole: "super_admin", action: "deleted", entityType: "banner", entityName: "Diwali Sale Banner", createdAt: hoursAgoIso(30) },
-  { id: "log-6", actorEmail: "inventory@urbankicks.in", actorRole: "inventory_manager", action: "updated", entityType: "product", entityName: "Adidas Ultraboost Surge", changedFields: ["stock"], createdAt: hoursAgoIso(48) },
-  { id: "log-7", actorEmail: "admin@urbankicks.in", actorRole: "super_admin", action: "created", entityType: "staff_member", entityName: "Rhea D'Souza", createdAt: daysAgoIso(4) },
-  { id: "log-8", actorEmail: "marketing@urbankicks.in", actorRole: "marketing_manager", action: "updated", entityType: "collection", entityName: "Jordan Collection", changedFields: ["show_on_homepage"], createdAt: daysAgoIso(6) },
+  { id: "log-1", actorEmail: "admin@grailsofficial.in", actorRole: "super_admin", action: "updated", entityType: "product", entityName: "Nike Air Zoom Pulse Runner", changedFields: ["price", "stock"], createdAt: hoursAgoIso(2) },
+  { id: "log-2", actorEmail: "marketing@grailsofficial.in", actorRole: "marketing_manager", action: "created", entityType: "coupon", entityName: "MONSOON15", createdAt: hoursAgoIso(5) },
+  { id: "log-3", actorEmail: "admin@grailsofficial.in", actorRole: "super_admin", action: "updated", entityType: "homepage_hero", entityName: "Hero Section", changedFields: ["heading", "bg_image_url"], createdAt: hoursAgoIso(9) },
+  { id: "log-4", actorEmail: "support@grailsofficial.in", actorRole: "customer_support", action: "status_changed", entityType: "order", entityName: "UK-20261014", changedFields: ["status"], createdAt: hoursAgoIso(14) },
+  { id: "log-5", actorEmail: "admin@grailsofficial.in", actorRole: "super_admin", action: "deleted", entityType: "banner", entityName: "Diwali Sale Banner", createdAt: hoursAgoIso(30) },
+  { id: "log-6", actorEmail: "inventory@grailsofficial.in", actorRole: "inventory_manager", action: "updated", entityType: "product", entityName: "Adidas Ultraboost Surge", changedFields: ["stock"], createdAt: hoursAgoIso(48) },
+  { id: "log-7", actorEmail: "admin@grailsofficial.in", actorRole: "super_admin", action: "created", entityType: "staff_member", entityName: "Rhea D'Souza", createdAt: daysAgoIso(4) },
+  { id: "log-8", actorEmail: "marketing@grailsofficial.in", actorRole: "marketing_manager", action: "updated", entityType: "collection", entityName: "Jordan Collection", changedFields: ["show_on_homepage"], createdAt: daysAgoIso(6) },
 ];
 
 export const adminNotifications: AdminNotification[] = [
@@ -50,11 +50,11 @@ export const adminNotifications: AdminNotification[] = [
 ];
 
 export const staffMembers: StaffMember[] = [
-  { id: "staff-1", name: "Admin User", email: "admin@urbankicks.in", roleId: "super_admin", active: true, lastActive: hoursAgoIso(0.2) },
-  { id: "staff-2", name: "Rhea D'Souza", email: "support@urbankicks.in", roleId: "customer_support", active: true, lastActive: hoursAgoIso(1) },
-  { id: "staff-3", name: "Amit Kulkarni", email: "inventory@urbankicks.in", roleId: "inventory_manager", active: true, lastActive: hoursAgoIso(4) },
-  { id: "staff-4", name: "Sanya Kapoor", email: "marketing@urbankicks.in", roleId: "marketing_manager", active: true, lastActive: hoursAgoIso(2) },
-  { id: "staff-5", name: "Farhan Sheikh", email: "manager@urbankicks.in", roleId: "store_manager", active: false, lastActive: daysAgoIso(12) },
+  { id: "staff-1", name: "Admin User", email: "admin@grailsofficial.in", roleId: "super_admin", active: true, lastActive: hoursAgoIso(0.2) },
+  { id: "staff-2", name: "Rhea D'Souza", email: "support@grailsofficial.in", roleId: "customer_support", active: true, lastActive: hoursAgoIso(1) },
+  { id: "staff-3", name: "Amit Kulkarni", email: "inventory@grailsofficial.in", roleId: "inventory_manager", active: true, lastActive: hoursAgoIso(4) },
+  { id: "staff-4", name: "Sanya Kapoor", email: "marketing@grailsofficial.in", roleId: "marketing_manager", active: true, lastActive: hoursAgoIso(2) },
+  { id: "staff-5", name: "Farhan Sheikh", email: "manager@grailsofficial.in", roleId: "store_manager", active: false, lastActive: daysAgoIso(12) },
 ];
 
 export const roles: RolePermission[] = [
@@ -66,12 +66,12 @@ export const roles: RolePermission[] = [
 ];
 
 export const emailTemplates: EmailTemplate[] = [
-  { id: "et-1", key: "order_confirmation", name: "Order Confirmation", subject: "Your UrbanKicks order {{order_number}} is confirmed 🎉", body: "Hi {{customer_name}}, thanks for shopping with UrbanKicks! Your order {{order_number}} worth ₹{{total}} has been confirmed and will ship within 2-3 business days.", active: true },
+  { id: "et-1", key: "order_confirmation", name: "Order Confirmation", subject: "Your Grail's Official order {{order_number}} is confirmed 🎉", body: "Hi {{customer_name}}, thanks for shopping with Grail's Official! Your order {{order_number}} worth ₹{{total}} has been confirmed and will ship within 2-3 business days.", active: true },
   { id: "et-2", key: "order_shipped", name: "Order Shipped", subject: "Your order {{order_number}} is on its way 🚚", body: "Good news {{customer_name}}! Your order has been shipped via {{courier_name}}. Track it here: {{tracking_link}}", active: true },
   { id: "et-3", key: "order_delivered", name: "Order Delivered", subject: "Delivered! Enjoy your new kicks 👟", body: "Hi {{customer_name}}, your order {{order_number}} has been delivered. We'd love to hear your feedback — leave a review!", active: true },
   { id: "et-4", key: "abandoned_cart", name: "Abandoned Cart Reminder", subject: "You left something in your cart 👀", body: "Hey {{customer_name}}, your cart is waiting! Complete your order before items go out of stock.", active: true },
   { id: "et-5", key: "return_approved", name: "Return Approved", subject: "Your return request {{request_number}} is approved", body: "Hi {{customer_name}}, your return has been approved. Our courier partner will pick up the item shortly.", active: true },
-  { id: "et-6", key: "password_reset", name: "Password Reset", subject: "Reset your UrbanKicks password", body: "Click the link below to reset your password. This link expires in 30 minutes.", active: false },
+  { id: "et-6", key: "password_reset", name: "Password Reset", subject: "Reset your Grail's Official password", body: "Click the link below to reset your password. This link expires in 30 minutes.", active: false },
 ];
 
 export const shippingZones: ShippingZone[] = [

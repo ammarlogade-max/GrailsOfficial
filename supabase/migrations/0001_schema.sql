@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0001_schema.sql
+-- Grail's Official — 0001_schema.sql
 -- Core tables: catalog, customers, orders, reviews, coupons/offers
 -- ============================================================================
 create extension if not exists "pgcrypto";

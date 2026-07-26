@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const baseURL = process.env.BASE_URL || "http://127.0.0.1:4173";
+const baseURL = (process as any).env?.BASE_URL || "http://127.0.0.1:4173";
 
 test.use({ baseURL });
 
@@ -62,6 +62,6 @@ test("admin protected route redirects unauthenticated users to login", async ({ 
   const errors = collectPageErrors(page);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/login$/);
-  await expect(page.getByRole("heading", { name: "UrbanKicks Admin" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Grail's Official Admin" })).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -351,7 +351,7 @@ export default function ProductDetail() {
                   <p className="text-xs text-neutral-400 mt-2 font-label">— {r.customerName}</p>
                   {r.adminReply && (
                     <div className="mt-2 bg-neutral-50 rounded-lg p-3 text-xs text-neutral-600">
-                      <span className="font-semibold">UrbanKicks Team:</span> {r.adminReply}
+                      <span className="font-semibold">Grail's Official Team:</span> {r.adminReply}
                     </div>
                   )}
                 </div>

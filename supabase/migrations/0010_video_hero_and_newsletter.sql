@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0010_video_hero_and_newsletter.sql
+-- Grail's Official — 0010_video_hero_and_newsletter.sql
 -- Closes a real SRS gap found during audit: homepage_hero.bg_type already
 -- supported 'video', but there was no column to actually store a video
 -- URL, and the frontend never branched on bg_type at all — it always

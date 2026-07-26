@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0007_v2_security_and_permissions.sql
+-- Grail's Official — 0007_v2_security_and_permissions.sql
 -- SRS v2.0 additions: granular permissions, automatic audit logging,
 -- rate limiting, IP rules, FAQs, error logs, and expanded settings/scoping
 -- columns. Written to be additive and safe to run after 0001-0006.
@@ -345,7 +345,7 @@ alter table public.store_settings
   add column if not exists google_tag_manager_id text default '',
   add column if not exists google_search_console_code text default '',
   add column if not exists og_default_image text default '',
-  add column if not exists seo_title_template text not null default '%s | UrbanKicks',
+  add column if not exists seo_title_template text not null default '%s | Grail''s Official',
   add column if not exists seo_default_keywords text default '',
   add column if not exists require_2fa_for_admin boolean not null default false,
   add column if not exists uptime_monitor_url text default '';

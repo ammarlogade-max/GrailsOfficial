@@ -1,6 +1,6 @@
-# UrbanKicks
+# Grail's Official
 
-A premium sneaker e-commerce platform, built from the UrbanKicks SRS v2.0.
+A premium sneaker e-commerce platform, built from the Grail's Official SRS v2.0.
 This repo now runs in **two modes**:
 
 - **Mock mode** (default, no setup): realistic in-memory/localStorage data via

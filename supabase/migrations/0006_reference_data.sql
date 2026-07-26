@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0006_reference_data.sql
+-- Grail's Official — 0006_reference_data.sql
 -- Configuration data the app needs on day one (NOT demo products — see
 -- scripts/seed-demo-catalog.ts for optional sample catalog data).
 -- ============================================================================
@@ -16,8 +16,8 @@ insert into public.roles (id, display_name, description, is_system_role, permiss
     array['homepage.edit','banners.manage','collections.manage','coupons.manage','offers.manage','categories.manage']);
 
 insert into public.email_templates (key, name, subject, body, active) values
-  ('order_confirmation', 'Order Confirmation', 'Your UrbanKicks order {{order_number}} is confirmed 🎉',
-    'Hi {{customer_name}}, thanks for shopping with UrbanKicks! Your order {{order_number}} worth ₹{{total}} has been confirmed and will ship within 2-3 business days.', true),
+  ('order_confirmation', 'Order Confirmation', 'Your Grail''s Official order {{order_number}} is confirmed 🎉',
+    'Hi {{customer_name}}, thanks for shopping with Grail''s Official! Your order {{order_number}} worth ₹{{total}} has been confirmed and will ship within 2-3 business days.', true),
   ('order_shipped', 'Order Shipped', 'Your order {{order_number}} is on its way 🚚',
     'Good news {{customer_name}}! Your order has been shipped via {{courier_name}}. Track it here: {{tracking_link}}', true),
   ('order_delivered', 'Order Delivered', 'Delivered! Enjoy your new kicks 👟',
@@ -26,7 +26,7 @@ insert into public.email_templates (key, name, subject, body, active) values
     'Hey {{customer_name}}, your cart is waiting! Complete your order before items go out of stock.', true),
   ('return_approved', 'Return Approved', 'Your return request {{request_number}} is approved',
     'Hi {{customer_name}}, your return has been approved. Our courier partner will pick up the item shortly.', true),
-  ('password_reset', 'Password Reset', 'Reset your UrbanKicks password',
+  ('password_reset', 'Password Reset', 'Reset your Grail''s Official password',
     'Click the link below to reset your password. This link expires in 30 minutes.', false);
 
 with z1 as (

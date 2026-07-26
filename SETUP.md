@@ -1,4 +1,4 @@
-# UrbanKicks — Production Setup Guide
+# Grail's Official — Production Setup Guide
 
 This gets you from this zip to a live site with a real database, real
 authentication, and real Razorpay payments. Follow it in order.

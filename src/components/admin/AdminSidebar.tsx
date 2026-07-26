@@ -90,7 +90,7 @@ export default function AdminSidebar({ mobileOpen, onClose }: { mobileOpen: bool
       <div className="flex items-center justify-between px-5 h-16 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2">
           <span className="w-7 h-7 rounded bg-[var(--color-primary)] flex items-center justify-center text-white font-display text-sm">U</span>
-          <span className="font-display text-lg text-white tracking-tight">UrbanKicks</span>
+          <span className="font-display text-lg text-white tracking-tight">Grail's Official</span>
         </div>
         <button onClick={onClose} className="lg:hidden text-neutral-400">
           <X size={18} />

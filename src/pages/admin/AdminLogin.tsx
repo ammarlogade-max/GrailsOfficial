@@ -72,7 +72,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <span className="w-12 h-12 rounded-lg bg-[var(--color-primary)] text-white font-display text-2xl inline-flex items-center justify-center">U</span>
-          <h1 className="font-display text-3xl text-white mt-4">UrbanKicks Admin</h1>
+          <h1 className="font-display text-3xl text-white mt-4">Grail's Official Admin</h1>
           <p className="text-neutral-500 text-sm mt-1">Sign in to manage your store</p>
         </div>
         <form onSubmit={submit} className="card bg-white p-6 space-y-4">

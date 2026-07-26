@@ -201,7 +201,7 @@ export const useCatalogStore = create<CatalogState>()(
           data = retry.data || data;
           error = retry.error;
         }
-        if (error || !data) throw new Error(error?.message || "Failed to create product");
+        if (error || !data) throw new Error(`[create_product_failed] ${error?.message || "Unknown error"}${error?.code ? ` code=${error.code}` : ""}${error?.details ? ` details=${error.details}` : ""}${error?.hint ? ` hint=${error.hint}` : ""}`);
         savedId = data.id;
       } else {
         const { error } = await supabase.from("products").update(payload).eq("id", product.id);

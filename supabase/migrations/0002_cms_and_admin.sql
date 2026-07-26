@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0002_cms_and_admin.sql
+-- Grail's Official — 0002_cms_and_admin.sql
 -- Homepage CMS, staff/roles, support, returns, media, audit, email, shipping
 -- ============================================================================
 
@@ -8,7 +8,7 @@
 -- ---------------------------------------------------------------------------
 create table public.store_settings (
   id boolean primary key default true constraint single_row check (id),
-  brand_name text not null default 'UrbanKicks',
+  brand_name text not null default 'Grail''s Official',
   brand_tagline text not null default 'Premium Replica Sneakers',
   primary_color text not null default '#f97316',
   secondary_color text not null default '#0a0a0a',

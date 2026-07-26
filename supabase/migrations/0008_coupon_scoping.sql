@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0008_coupon_scoping.sql
+-- Grail's Official — 0008_coupon_scoping.sql
 -- Makes the coupons.applies_to/category_ids/product_ids columns from
 -- 0007 actually mean something: validate_coupon now takes the cart's
 -- contents (not just a total) so it can compute a discount scoped to only

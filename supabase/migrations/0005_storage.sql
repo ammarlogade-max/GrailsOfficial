@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanKicks — 0005_storage.sql
+-- Grail's Official — 0005_storage.sql
 -- Storage buckets: product images, banners/hero, general media — all public
 -- read (needed for the storefront), staff-only write.
 -- ============================================================================
