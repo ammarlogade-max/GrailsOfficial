@@ -136,7 +136,7 @@ export default function HomepageCMS() {
             <p className="eyebrow text-neutral-400 mb-3">Live Preview — Header</p>
             <div className="bg-white rounded-lg border border-neutral-200 p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded flex items-center justify-center text-white font-display" style={{ background: settings.secondaryColor }}>U</span>
+                <img src="/image.png" alt="Logo" className="w-10 h-10 object-contain" />
                 <span className="font-display text-lg" style={{ color: settings.secondaryColor }}>{settings.brandName}</span>
               </div>
               <button className="btn btn-sm" style={{ background: settings.buttonColor, color: "#fff" }}>Shop Now</button>

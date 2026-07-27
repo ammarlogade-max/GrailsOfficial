@@ -71,7 +71,7 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <span className="w-12 h-12 rounded-lg bg-[var(--color-primary)] text-white font-display text-2xl inline-flex items-center justify-center">U</span>
+          <img src="/image.png" alt="Logo" className="w-16 h-16 object-contain mx-auto" />
           <h1 className="font-display text-3xl text-white mt-4">Grail's Official Admin</h1>
           <p className="text-neutral-500 text-sm mt-1">Sign in to manage your store</p>
         </div>

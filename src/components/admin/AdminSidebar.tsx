@@ -89,7 +89,7 @@ export default function AdminSidebar({ mobileOpen, onClose }: { mobileOpen: bool
     <div className="h-full flex flex-col bg-[#0a0a0a] text-neutral-300 w-64 shrink-0">
       <div className="flex items-center justify-between px-5 h-16 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded bg-[var(--color-primary)] flex items-center justify-center text-white font-display text-sm">U</span>
+          <img src="/image.png" alt="Logo" className="w-8 h-8 object-contain" />
           <span className="font-display text-lg text-white tracking-tight">Grail's Official</span>
         </div>
         <button onClick={onClose} className="lg:hidden text-neutral-400">
