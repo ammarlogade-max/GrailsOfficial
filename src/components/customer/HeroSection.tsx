@@ -27,6 +27,9 @@ export default function HeroSection({ hero }: HeroSectionProps) {
         : "items-start text-left";
 
   const showVideo = hero.bgType === "video" && !!hero.videoUrl && !videoFailed;
+  const hasContent = !!hero.heading || !!hero.photo;
+
+  if (!hasContent) return null;
 
   return (
     <section className="relative overflow-hidden cut-edge-bottom" style={{ background: "var(--color-secondary)" }}>
@@ -59,7 +62,7 @@ export default function HeroSection({ hero }: HeroSectionProps) {
             </Link>
             <Link
               to={hero.ctaSecondaryLink}
-              className="btn btn-outline btn-lg w-full sm:w-auto text-white border-white/60 bg-white/10 hover:bg-white/15 hover:border-white"
+              className="btn btn-lg w-full sm:w-auto text-white border-2 border-white bg-white/20 hover:bg-white/35"
             >
               {hero.ctaSecondaryText}
             </Link>

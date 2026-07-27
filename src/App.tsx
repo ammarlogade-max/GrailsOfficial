@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuthInit } from "./lib/useAuthInit";
 import { useCatalogInit } from "./lib/useCatalogInit";
 import { useCMSInit } from "./lib/useCMSInit";
+import { useCMSStore } from "./store/cmsStore";
+import { useCatalogStore } from "./store/catalogStore";
 import CustomerLayout from "./components/layout/CustomerLayout";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminGuard from "./components/admin/AdminGuard";
@@ -54,9 +57,38 @@ import FAQsAdmin from "./pages/admin/FAQsAdmin";
 import ErrorLogsAdmin from "./pages/admin/ErrorLogsAdmin";
 
 export default function App() {
+  const [ready, setReady] = useState(false);
+  
   useAuthInit();
   useCatalogInit();
   useCMSInit();
+
+  useEffect(() => {
+    const unsubCms = useCMSStore.subscribe((s) => {
+      if (s.loaded && useCatalogStore.getState().loaded) {
+        setReady(true);
+      }
+    });
+    const unsubCat = useCatalogStore.subscribe((s) => {
+      if (s.loaded && useCMSStore.getState().loaded) {
+        setReady(true);
+      }
+    });
+    if (useCMSStore.getState().loaded && useCatalogStore.getState().loaded) {
+      setReady(true);
+    }
+    return () => { unsubCms(); unsubCat(); };
+  }, []);
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+        <p className="text-neutral-500 text-sm">Loading store...</p>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>

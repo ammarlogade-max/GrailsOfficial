@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { heroPhoto, darkBannerPhoto, categoryHeroPhoto } from "../lib/images";
+import { heroPhoto } from "../lib/images";
 import { supabase } from "../lib/supabase";
 import { sanitizeText } from "../lib/sanitize";
 
@@ -139,9 +139,9 @@ interface CMSState {
   reorderSections: (sections: HomepageSection[]) => void;
 }
 
-const defaultSettings: StoreSettings = {
-  brandName: "Grail's Official",
-  brandTagline: "Premium Replica Sneakers",
+const emptySettings: StoreSettings = {
+  brandName: "",
+  brandTagline: "",
   logoUrl: "",
   logoDarkUrl: "",
   faviconUrl: "",
@@ -154,13 +154,13 @@ const defaultSettings: StoreSettings = {
   buttonTextColor: "#ffffff",
   fontHeading: "Inter",
   fontBody: "Inter",
-  whatsappNumber: "+91 98765 43210",
-  supportEmail: "support@grailsofficial.in",
-  supportPhone: "+91 98765 43210",
-  businessAddress: "Shop 12, Neral Main Road, Raigad, Maharashtra 410101",
-  instagramUrl: "https://instagram.com/grailsoffcl",
-  facebookUrl: "https://facebook.com/grailsoffcl",
-  youtubeUrl: "https://youtube.com/@grailsoffcl",
+  whatsappNumber: "",
+  supportEmail: "",
+  supportPhone: "",
+  businessAddress: "",
+  instagramUrl: "",
+  facebookUrl: "",
+  youtubeUrl: "",
   twitterUrl: "",
   tiktokUrl: "",
   currencySymbol: "₹",
@@ -171,18 +171,18 @@ const defaultSettings: StoreSettings = {
   expressShippingCharge: 199,
   codCharge: 49,
   codAvailable: true,
-  googleAnalyticsId: "G-XXXXXXXXXX",
+  googleAnalyticsId: "",
   metaPixelId: "",
   microsoftClarityId: "",
   googleTagManagerId: "",
   googleSearchConsoleCode: "",
-  seoDefaultTitle: "Grail's Official — Premium Replica Sneakers",
-  seoDefaultDescription: "Shop premium replica sneakers online. COD available, free shipping above ₹999, 7-day returns. India's trusted sneaker store.",
-  seoDefaultKeywords: "replica sneakers, sneakers india, cod sneakers, premium replica shoes",
-  seoTitleTemplate: "%s | Grail's Official",
+  seoDefaultTitle: "",
+  seoDefaultDescription: "",
+  seoDefaultKeywords: "",
+  seoTitleTemplate: "",
   ogDefaultImage: "",
-  footerAboutText: "Grail's Official brings you premium quality replica sneakers at honest prices — for the sneakerheads who know their kicks.",
-  footerCopyrightText: "© 2026 Grail's Official. All rights reserved.",
+  footerAboutText: "",
+  footerCopyrightText: "",
   reviewsEnabled: true,
   wishlistEnabled: true,
   guestCheckoutEnabled: true,
@@ -192,67 +192,35 @@ const defaultSettings: StoreSettings = {
   newsletterEnabled: true,
 };
 
-const defaultHero: HeroContent = {
-  heading: "India's Best Replica Sneakers",
-  subheading: "Premium quality, unbeatable prices. COD available across India.",
-  offerBadgeText: "UP TO 60% OFF",
-  ctaPrimaryText: "Shop Now",
-  ctaPrimaryLink: "/products",
-  ctaSecondaryText: "Explore Jordans",
-  ctaSecondaryLink: "/collections/jordan-collection",
+const emptyHero: HeroContent = {
+  heading: "",
+  subheading: "",
+  offerBadgeText: "",
+  ctaPrimaryText: "",
+  ctaPrimaryLink: "",
+  ctaSecondaryText: "",
+  ctaSecondaryLink: "",
   bgType: "image",
-  photo: heroPhoto(),
+  photo: "",
   videoUrl: "",
   posterImage: "",
   overlayOpacity: 0.55,
   textAlignment: "left",
 };
 
-const defaultBanners: HomepageBanner[] = [
-  { id: "ban-1", title: "Festival Sale", subtitle: "Up to 60% off sitewide", buttonText: "Shop the Sale", buttonLink: "/collections/festival-sale", badgeText: "60% OFF", badgeColor: "#e11d48", photo: darkBannerPhoto("sneakersBlackBg"), active: true, sortOrder: 1 },
-  { id: "ban-2", title: "Jordan Collection", subtitle: "Retro exclusives just dropped", buttonText: "Explore", buttonLink: "/collections/jordan-collection", badgeText: "NEW", badgeColor: "#f97316", photo: categoryHeroPhoto("cat-basketball"), active: true, sortOrder: 2 },
-  { id: "ban-3", title: "Monsoon Ready", subtitle: "Grippy soles for the rains", buttonText: "Shop Now", buttonLink: "/collections/monsoon-ready", badgeText: "TRENDING", badgeColor: "#0a0a0a", photo: categoryHeroPhoto("cat-training"), active: true, sortOrder: 3 },
-];
+const emptyBanners: HomepageBanner[] = [];
 
-const defaultSections: HomepageSection[] = [
-  { id: "sec-1", sectionType: "new_arrivals", title: "New Arrivals", subtitle: "Fresh drops, just landed", active: true, sortOrder: 1, productLimit: 8 },
-  { id: "sec-2", sectionType: "best_sellers", title: "Best Sellers", subtitle: "Customer favourites", active: true, sortOrder: 2, productLimit: 8 },
-  { id: "sec-3", sectionType: "collection", title: "🎉 Festival Sale", subtitle: "Our biggest markdowns of the season", collectionId: "col-festival", active: true, sortOrder: 3, productLimit: 8 },
-  { id: "sec-4", sectionType: "categories_grid", title: "Shop by Category", subtitle: "Find your perfect fit", active: true, sortOrder: 4, productLimit: 8 },
-  { id: "sec-5", sectionType: "trending", title: "🔥 Trending Now", subtitle: "What everyone's buying", active: true, sortOrder: 5, productLimit: 8 },
-  { id: "sec-6", sectionType: "collection", title: "Jordan Exclusives", subtitle: "Iconic silhouettes for the culture", collectionId: "col-jordan", active: true, sortOrder: 6, productLimit: 8 },
-  { id: "sec-7", sectionType: "reviews", title: "What Our Customers Say", subtitle: "10,000+ happy sneakerheads", active: true, sortOrder: 7, productLimit: 6 },
-  { id: "sec-8", sectionType: "instagram", title: "Shop Our Instagram", subtitle: "Tag us @grailsoffcl for a chance to be featured", active: true, sortOrder: 8, productLimit: 6 },
-];
+const emptySections: HomepageSection[] = [];
 
-const defaultAnnouncement: AnnouncementBar = {
-  text: "FREE DELIVERY ABOVE ₹999 · COD AVAILABLE · NEW ARRIVALS WEEKLY · 7-DAY EASY RETURNS",
+const emptyAnnouncement: AnnouncementBar = {
+  text: "",
   bgColor: "#0a0a0a",
   textColor: "#ffffff",
   scrollSpeed: 30,
-  active: true,
+  active: false,
 };
 
-const defaultFooterGroups: FooterLinkGroup[] = [
-  { groupName: "Shop", links: [
-    { label: "New Arrivals", url: "/products?sort=newest" },
-    { label: "Best Sellers", url: "/products?filter=bestseller" },
-    { label: "Collections", url: "/products" },
-    { label: "Sale", url: "/collections/festival-sale" },
-  ]},
-  { groupName: "Help", links: [
-    { label: "Track Order", url: "/track" },
-    { label: "Returns & Exchange", url: "/account/orders" },
-    { label: "FAQs", url: "/faq" },
-    { label: "Contact Us", url: "/" },
-  ]},
-  { groupName: "Company", links: [
-    { label: "About Us", url: "/" },
-    { label: "Careers", url: "/" },
-    { label: "Privacy Policy", url: "/" },
-    { label: "Terms of Service", url: "/" },
-  ]},
-];
+const emptyFooterGroups: FooterLinkGroup[] = [];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapSettings(row: any): StoreSettings {
@@ -323,13 +291,13 @@ const isUuid = (id: string) => UUID_RE.test(id);
 
 export const useCMSStore = create<CMSState>()(
   (set, get) => ({
-    settings: defaultSettings,
-    hero: defaultHero,
-    banners: defaultBanners,
-    sections: defaultSections,
-    announcement: defaultAnnouncement,
-    footerGroups: defaultFooterGroups,
-    loading: false,
+    settings: emptySettings,
+    hero: emptyHero,
+    banners: emptyBanners,
+    sections: emptySections,
+    announcement: emptyAnnouncement,
+    footerGroups: emptyFooterGroups,
+    loading: true,
     loaded: false,
 
     fetchAll: async () => {
@@ -356,9 +324,9 @@ export const useCMSStore = create<CMSState>()(
       if (secErr) console.error("fetch homepage_sections failed:", secErr.message);
       if (gErr) console.error("fetch footer_link_groups failed:", gErr.message);
       set({
-        settings: settingsRow ? mapSettings(settingsRow) : defaultSettings,
-        hero: heroRow ? mapHero(heroRow) : defaultHero,
-        announcement: annRow ? mapAnnouncement(annRow) : defaultAnnouncement,
+        settings: settingsRow ? mapSettings(settingsRow) : emptySettings,
+        hero: heroRow ? mapHero(heroRow) : emptyHero,
+        announcement: annRow ? mapAnnouncement(annRow) : emptyAnnouncement,
         banners: bannerRows ? bannerRows.map(mapBanner) : [],
         sections: sectionRows ? sectionRows.map(mapSection) : [],
         footerGroups: groupRows
@@ -367,7 +335,7 @@ export const useCMSStore = create<CMSState>()(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               links: [...(g.footer_links || [])].sort((a: any, b: any) => a.sort_order - b.sort_order).map((l: any) => ({ label: l.label, url: l.url })),
             }))
-          : defaultFooterGroups,
+          : emptyFooterGroups,
         loading: false,
         loaded: true,
       });

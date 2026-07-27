@@ -31,7 +31,7 @@ function resolveProducts(section: HomepageSection, products: Product[], collecti
 }
 
 export default function Home() {
-  const { hero, banners, sections, settings } = useCMSStore();
+  const { hero, banners, sections, settings, loaded } = useCMSStore();
   const { products, categories, collections } = useCatalogStore();
   const allReviews = useReviewsStore((s) => s.reviews);
   const fetchAllReviews = useReviewsStore((s) => s.fetchAll);
@@ -56,6 +56,15 @@ export default function Home() {
     fetchAllReviews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (!loaded) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+        <p className="text-neutral-500 text-sm">Loading store...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
