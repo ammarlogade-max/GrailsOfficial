@@ -1,0 +1,6 @@
+{
+  "name": "Pathology LIS Platform",
+  "description": "Enterprise-grade Pathology Laboratory Information System for patient visits, billing, lab tests, inventory, analyzers, and reports",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "pathology-lis-platform",
+  "private": true,
+  "workspaces": [
+    "apps/desktop"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@pathology-lis/desktop",
+    "build": "npm run build --workspace=@pathology-lis/desktop && node scripts/copy-desktop-dist.mjs",
+    "lint": "npm run lint --workspace=@pathology-lis/desktop",
+    "preview": "npm run preview --workspace=@pathology-lis/desktop"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@supabase/supabase-js": "^2.56.0",
+    "@types/node": "^22.20.2",
+    "eslint": "^9.39.5",
+    "ws": "^8.18.3",
+    "xlsx": "^0.18.5"
+  }
+}
